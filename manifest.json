@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "SEARCHIT Selected Text Search",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Search selected text on your own editable list of websites.",
   "minimum_chrome_version": "123",
   "permissions": ["contextMenus", "storage", "favicon", "scripting"],

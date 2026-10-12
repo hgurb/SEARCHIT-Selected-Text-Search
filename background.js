@@ -80,7 +80,7 @@ export function rebuildMenus() {
     if (!enabled.length) return;
     await createMenu({ id: 'search-root', title: 'Search selected text', contexts: ['selection'] });
     for (const option of enabled) {
-      await createMenu({ id: `search:${option.id}`, parentId: 'search-root', title: `Search on ${option.name.replaceAll('%', '％')}${option.incognito === true ? ' (Incognito)' : ''}`, contexts: ['selection'] });
+      await createMenu({ id: `search:${option.id}`, parentId: 'search-root', title: `${option.name.replaceAll('%', '％')}${option.incognito === true ? ' (Incognito)' : ''}`, contexts: ['selection'] });
     }
   });
   return menuQueue;

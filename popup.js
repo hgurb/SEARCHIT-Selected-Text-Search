@@ -140,10 +140,10 @@
     try {
       const result = await chrome.runtime.sendMessage({ type: 'quick-popup-config' });
       if (current !== generation) return;
-      config = result;
+      config = result?.settings && Array.isArray(result.options) ? result : undefined;
       hide();
       if (config?.settings.enabled && config.options.length) { render(); schedule(); }
-    } catch { hide(); }
+    } catch { if (current === generation) { config = undefined; hide(); } }
   }
   document.addEventListener('pointerdown', event => {
     if (event.composedPath().includes(host)) return;
