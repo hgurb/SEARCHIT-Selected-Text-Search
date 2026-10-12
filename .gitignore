@@ -1,6 +1,9 @@
-# Track only extension runtime files and this exclusion policy.
+# Track extension runtime files, public documentation, and this exclusion policy.
 /*
 !/.gitignore
+!/README.md
+!/PRIVACY.md
+!/LICENSE
 !/manifest.json
 !/background.js
 !/options.html
