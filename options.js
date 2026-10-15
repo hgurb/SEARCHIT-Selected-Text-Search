@@ -33,6 +33,7 @@ function disableSave(disabled) {
 
 let saved = [];
 let dirty = false;
+let editRevision = 0;
 let savedPopup = { ...DEFAULT_POPUP };
 let savedSearchSettings = { ...DEFAULT_SEARCH_SETTINGS };
 const windowBehavior = document.querySelector('#window-behavior');
@@ -94,7 +95,7 @@ chrome.permissions.onRemoved.addListener(async () => {
   }
 });
 
-function markDirty() { dirty = true; status.textContent = 'Unsaved changes'; }
+function markDirty() { editRevision++; dirty = true; status.textContent = 'Unsaved changes'; }
 function updateCount() {
   const rows = [...list.children];
   document.querySelector('#count').textContent = `${rows.length} sites`;
@@ -221,7 +222,7 @@ document.querySelectorAll('#add, #add-bottom').forEach(button => button.addEvent
   const row = addRow({ id: crypto.randomUUID(), name: '', url: '', enabled: true });
   markDirty(); row.querySelector('.name').focus();
 }));
-document.querySelector('#discard-top').addEventListener('click', () => { render(saved); renderPopup(savedPopup); renderWindowBehavior(savedSearchSettings.windowBehavior); popupStatus.textContent = ''; setImportReady(false); importNotice.hidden = true; transferStatus.textContent = ''; dirty = false; status.textContent = 'Changes discarded'; });
+document.querySelector('#discard-top').addEventListener('click', () => { editRevision++; render(saved); renderPopup(savedPopup); renderWindowBehavior(savedSearchSettings.windowBehavior); popupStatus.textContent = ''; setImportReady(false); importNotice.hidden = true; transferStatus.textContent = ''; dirty = false; status.textContent = 'Changes discarded'; });
 document.querySelector('#reset-top').addEventListener('click', () => {
   render(DEFAULT_OPTIONS.map(option => ({ ...option })));
   renderPopup(DEFAULT_POPUP);
@@ -270,23 +271,29 @@ document.querySelector('#settings').addEventListener('submit', async event => {
     popupColumns.reportValidity();
     return;
   }
+  const saveRevision = editRevision;
   let options;
   try { options = collectOptions(); }
   catch (error) { status.textContent = error.message; return; }
   disableSave(true);
   try {
     const quickPopup = collectPopup();
-    if (quickPopup.enabled && !await chrome.permissions.contains({ origins: POPUP_ORIGINS })) throw new Error('Website access is required. Enable the quick popup again.');
     const searchSettings = { windowBehavior: collectWindowBehavior() };
+    if (quickPopup.enabled && !await chrome.permissions.contains({ origins: POPUP_ORIGINS })) throw new Error('Website access is required. Enable the quick popup again.');
     await chrome.storage.local.set({ searchOptions: options, quickPopup, searchSettings });
     savedSearchSettings = structuredClone(searchSettings);
     savedPopup = structuredClone(quickPopup);
-    saved = structuredClone(options); dirty = false;
-    popupStatus.textContent = '';
-    setImportReady(false);
-    if (!importNotice.hidden) transferStatus.textContent = 'Imported options saved.';
-    importNotice.hidden = true;
-    status.textContent = 'Saved. Your searches are ready.';
+    saved = structuredClone(options);
+    dirty = editRevision !== saveRevision;
+    if (dirty) {
+      status.textContent = 'Earlier changes saved. Newer edits are unsaved.';
+    } else {
+      popupStatus.textContent = '';
+      setImportReady(false);
+      if (!importNotice.hidden) transferStatus.textContent = 'Imported options saved.';
+      importNotice.hidden = true;
+      status.textContent = 'Saved. Your searches are ready.';
+    }
   } catch { status.textContent = 'Could not save. Your changes are still here; try again.'; }
   finally { disableSave(false); }
 });
