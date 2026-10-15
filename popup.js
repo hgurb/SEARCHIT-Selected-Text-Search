@@ -36,8 +36,8 @@
       button:disabled { opacity:.5;cursor:wait; }
       img { display:block;width:20px;height:20px;object-fit:contain; }
       .incognito-badge { position:absolute;right:1px;top:1px;width:12px;height:12px;padding:1px;border-radius:3px;background:#fff;color:#243447;box-shadow:0 0 0 1px #0002;pointer-events:none; }
-      .new-window-badge { position:absolute;right:1px;top:1px;width:12px;height:12px;padding:1px;border-radius:2px;background:#fff;color:#226ec4;box-shadow:0 0 0 1px #0002;pointer-events:none; }
-      .dark .new-window-badge { background:#211d1a;color:#9bc8ff;box-shadow:0 0 0 1px #ffffff30; }
+      .new-window-badge { position:absolute;right:1px;top:1px;width:12px;height:12px;padding:1px;border-radius:2px;background:#fff;color:#243447;box-shadow:0 0 0 1px #0002;pointer-events:none; }
+      .dark .new-window-badge { background:#211d1a;color:#eee8e2;box-shadow:0 0 0 1px #ffffff30; }
       .dark .incognito-badge { background:#211d1a;color:#eee8e2;box-shadow:0 0 0 1px #ffffff30; }
       .label-badge { position:absolute;right:1px;bottom:1px;max-width:26px;min-width:10px;padding:1px 2px;border-radius:3px;background:#fff;color:#243447;box-shadow:0 0 0 1px #0002;font:700 8px/10px system-ui,sans-serif;text-align:right;text-transform:uppercase;white-space:nowrap;overflow:hidden;pointer-events:none; }
       .dark .label-badge { background:#211d1a;color:#eee8e2;box-shadow:0 0 0 1px #ffffff30; }
