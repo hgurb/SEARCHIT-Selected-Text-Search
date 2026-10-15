@@ -50,6 +50,32 @@
         <p id="popup-status" class="note" role="status" aria-live="polite"></p>
         </div>
       </details>
+      <details class="search-tab-settings settings-section settings-card">
+        <summary id="search-tab-heading"><span class="settings-summary-line"><span>New tab behavior<span class="settings-scope">Only for sites where both New window and Incognito are turned off.</span></span><span id="tab-current" class="settings-current">At the end of the tab list</span></span></summary>
+        <div class="settings-section-content">
+          <fieldset id="tab-placement" aria-describedby="tab-placement-help">
+            <legend>New tab position</legend>
+            <div class="window-behavior-row">
+              <label for="tab-placement-end"><input id="tab-placement-end" type="radio" name="tab-placement" value="end" aria-describedby="tab-description-end" checked> At the end of the tab list</label>
+              <p id="tab-description-end" class="note">Open each search after the last tab in the source window.</p>
+            </div>
+            <div class="window-behavior-row">
+              <label for="tab-placement-start"><input id="tab-placement-start" type="radio" name="tab-placement" value="start" aria-describedby="tab-description-start"> At the beginning of the tab list</label>
+              <p id="tab-description-start" class="note">Open each search at the beginning of the tab list. Pinned tabs stay first.</p>
+            </div>
+            <div class="window-behavior-row">
+              <label for="tab-placement-right"><input id="tab-placement-right" type="radio" name="tab-placement" value="right" aria-describedby="tab-description-right"> To the right of the source tab</label>
+              <p id="tab-description-right" class="note">Open each search immediately to the right of the tab where you selected the text.</p>
+            </div>
+            <div class="window-behavior-row">
+              <label for="tab-placement-left"><input id="tab-placement-left" type="radio" name="tab-placement" value="left" aria-describedby="tab-description-left"> To the left of the source tab</label>
+              <p id="tab-description-left" class="note">Open each search immediately to the left of the tab where you selected the text.</p>
+            </div>
+          </fieldset>
+          <p id="tab-placement-help" class="note">Applies to regular searches from the right-click menu and quick popup. New window and Incognito searches keep their own behavior.</p>
+          <p id="tab-save-notice" class="note" role="status" aria-live="polite" hidden>Save changes to apply this choice.</p>
+        </div>
+      </details>
       <details class="search-window-settings settings-section settings-card">
         <summary id="search-window-heading"><span class="settings-summary-line"><span>New window behavior<span class="settings-scope">Only for sites with New window selected</span></span><span id="window-current" class="settings-current">Always open a new window</span></span></summary>
         <div class="settings-section-content">
@@ -103,6 +129,7 @@
         <section aria-labelledby="changelog-120">
           <h3 id="changelog-120">Version 1.2.0</h3>
           <ul>
+            <li><strong>[NEW]</strong> Choose whether regular search tabs open at the beginning or end of the tab list, or immediately to either side of the source tab.</li>
             <li><strong>[NEW]</strong> Choose separate search windows for every search, reuse by source tab, search link, or source window.</li>
             <li><strong>[NEW]</strong> Open a website’s searches in a new window from either menu, with a shortcut-arrow badge in the quick popup. New window and Incognito are mutually exclusive.</li>
             <li><strong>[NEW]</strong> Choose a different website’s favicon for each search option, with a preview in settings and support for import and export.</li>

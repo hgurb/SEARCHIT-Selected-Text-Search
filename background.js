@@ -173,6 +173,21 @@ chrome.windows.onRemoved.addListener(windowId => {
   chrome.storage.session.remove(sourceWindowKey(windowId)).catch(error => console.error('Could not clear source window:', error));
 });
 
+async function openRegularSearchTab(url, sourceTab) {
+  const properties = { url, windowId: sourceTab.windowId };
+  const { tabPlacement } = await readSearchSettings();
+  if (tabPlacement === 'start') properties.index = 0;
+  else if (tabPlacement !== 'end' && Number.isInteger(sourceTab.id) && sourceTab.id >= 0) {
+    try {
+      const current = await chrome.tabs.get(sourceTab.id);
+      if (current.incognito === false && current.windowId === sourceTab.windowId && Number.isInteger(current.index) && current.index >= 0) {
+        properties.index = current.index + (tabPlacement === 'right' ? 1 : 0);
+      }
+    } catch { /* If the source tab closed or moved, append without guessing its position. */ }
+  }
+  await chrome.tabs.create(properties);
+}
+
 export async function openSearch(option, text, sourceTab) {
   const url = buildSearchUrl(option, text);
   const incognito = option.incognito === true;
@@ -195,7 +210,7 @@ export async function openSearch(option, text, sourceTab) {
   }
   // A regular source window is already known to be usable for regular searches.
   if (!incognito && sourceTab?.incognito === false) {
-    await chrome.tabs.create({ url, windowId: sourceTab.windowId });
+    await openRegularSearchTab(url, sourceTab);
     return;
   }
   let target;

@@ -49,6 +49,16 @@ function renderWindowBehavior(value) {
 function collectWindowBehavior() {
   return windowBehavior.querySelector('input:checked')?.value ?? DEFAULT_SEARCH_SETTINGS.windowBehavior;
 }
+const tabPlacement = document.querySelector('#tab-placement');
+tabPlacement.addEventListener('change', () => { updateTabSummary(); markDirty('tabs'); });
+function updateTabSummary() {
+  document.querySelector('#tab-current').textContent = tabPlacement.querySelector('input:checked')?.closest('label').textContent.trim() ?? 'At the end of the tab list';
+}
+function renderTabPlacement(value) {
+  for (const radio of tabPlacement.querySelectorAll('input[type="radio"]')) radio.checked = radio.value === value;
+  updateTabSummary();
+}
+function collectTabPlacement() { return tabPlacement.querySelector('input:checked')?.value ?? DEFAULT_SEARCH_SETTINGS.tabPlacement; }
 let popupEnabled = false;
 const popupButton = document.querySelector('#popup-enabled');
 const popupTheme = document.querySelector('#popup-theme');
@@ -97,6 +107,7 @@ chrome.permissions.onRemoved.addListener(async () => {
 });
 
 function renderSaveNotices() {
+  document.querySelector('#tab-save-notice').hidden = !changedSections.has('tabs');
   document.querySelector('#window-save-notice').hidden = !changedSections.has('windows');
   document.querySelector('#options-save-notice').hidden = !changedSections.has('options');
   if (changedSections.has('popup')) popupStatus.textContent = 'Save changes to apply this choice.';
@@ -105,7 +116,7 @@ function renderSaveNotices() {
 function markDirty(section = 'options') {
   editRevision++;
   dirty = true;
-  for (const key of section === 'all' ? ['popup', 'windows', 'options'] : [section]) changedSections.set(key, editRevision);
+  for (const key of section === 'all' ? ['popup', 'tabs', 'windows', 'options'] : [section]) changedSections.set(key, editRevision);
   renderSaveNotices();
   status.textContent = 'Unsaved changes';
 }
@@ -235,11 +246,12 @@ document.querySelectorAll('#add, #add-bottom').forEach(button => button.addEvent
   const row = addRow({ id: crypto.randomUUID(), name: '', url: '', enabled: true });
   markDirty(); row.querySelector('.name').focus();
 }));
-document.querySelector('#discard-top').addEventListener('click', () => { editRevision++; render(saved); renderPopup(savedPopup); renderWindowBehavior(savedSearchSettings.windowBehavior); popupStatus.textContent = ''; changedSections.clear(); if (saving) for (const key of ['popup', 'windows', 'options']) changedSections.set(key, editRevision); renderSaveNotices(); setImportReady(false); importNotice.hidden = true; transferStatus.textContent = ''; dirty = false; status.textContent = 'Changes discarded'; });
+document.querySelector('#discard-top').addEventListener('click', () => { editRevision++; render(saved); renderPopup(savedPopup); renderWindowBehavior(savedSearchSettings.windowBehavior); renderTabPlacement(savedSearchSettings.tabPlacement); popupStatus.textContent = ''; changedSections.clear(); if (saving) for (const key of ['popup', 'tabs', 'windows', 'options']) changedSections.set(key, editRevision); renderSaveNotices(); setImportReady(false); importNotice.hidden = true; transferStatus.textContent = ''; dirty = false; status.textContent = 'Changes discarded'; });
 document.querySelector('#reset-top').addEventListener('click', () => {
   render(DEFAULT_OPTIONS.map(option => ({ ...option })));
   renderPopup(DEFAULT_POPUP);
   renderWindowBehavior(DEFAULT_SEARCH_SETTINGS.windowBehavior);
+  renderTabPlacement(DEFAULT_SEARCH_SETTINGS.tabPlacement);
   popupStatus.textContent = '';
   markDirty('all');
   setImportReady(false);
@@ -291,7 +303,7 @@ document.querySelector('#settings').addEventListener('submit', async event => {
   disableSave(true);
   try {
     const quickPopup = collectPopup();
-    const searchSettings = { windowBehavior: collectWindowBehavior() };
+    const searchSettings = { windowBehavior: collectWindowBehavior(), tabPlacement: collectTabPlacement() };
     if (quickPopup.enabled && !await chrome.permissions.contains({ origins: POPUP_ORIGINS })) throw new Error('Website access is required. Enable the quick popup again.');
     await chrome.storage.local.set({ searchOptions: options, quickPopup, searchSettings });
     savedSearchSettings = structuredClone(searchSettings);
@@ -340,5 +352,5 @@ document.querySelector('#import').addEventListener('click', () => {
   transferStatus.textContent = `Loaded ${options.length} search options for review.`;
 });
 window.addEventListener('beforeunload', event => { if (dirty) { event.preventDefault(); event.returnValue = ''; } });
-try { [saved, savedPopup, savedSearchSettings] = await Promise.all([readOptions(), readPopup(), readSearchSettings()]); render(saved); renderPopup(savedPopup); renderWindowBehavior(savedSearchSettings.windowBehavior); }
+try { [saved, savedPopup, savedSearchSettings] = await Promise.all([readOptions(), readPopup(), readSearchSettings()]); render(saved); renderPopup(savedPopup); renderWindowBehavior(savedSearchSettings.windowBehavior); renderTabPlacement(savedSearchSettings.tabPlacement); }
 catch { status.textContent = 'Could not load settings. Reload this page to try again.'; disableSave(true); }

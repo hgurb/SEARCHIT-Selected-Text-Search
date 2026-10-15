@@ -23,6 +23,8 @@ Enable **Quick popup** and grant website access to show clickable site icons bes
 
 Choose **Use a different icon** beneath a search link to use another website’s icon. Custom favicon sources are included in import and export.
 
+Under **New tab behavior**, choose whether regular searches open at the end of the tab list (default), immediately to the right or left of the source tab, or at the beginning of the list. Pinned tabs remain first.
+
 Check **New window** to open a site’s searches in separate regular windows. Under **Search window behavior**, choose a new window for every search, reuse by source tab or full configured search link, or reuse by source window. Searches from the same browser window share one destination, while searches from that destination get a separate window of their own. Reused windows open each search in a new tab. New window and Incognito cannot be selected together. Both choices are included in import and export.
 
 Check **Incognito** for a site to open its searches in a private window. Enable **Allow in Incognito** in Chrome's extension settings to reuse existing private windows.

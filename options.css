@@ -18,14 +18,14 @@ html { scroll-padding-top: calc(var(--settings-toolbar-height, 100px) + 12px); }
 .settings-scope { display: block; margin-top: 4px; color: #536174; font-size: 12px; font-weight: 400; line-height: 1.5; }
 :root:not([data-theme="light"]) .settings-scope { color: #a4b2c8; }
 .settings-section-content { padding-top: 8px; }
-#window-behavior { min-width: 0; border: 0; padding: 0; margin: 16px 0; }
-#window-behavior legend { padding: 0; margin-bottom: 8px; font-size: 12px; font-weight: 650; }
+#window-behavior, #tab-placement { min-width: 0; border: 0; padding: 0; margin: 16px 0; }
+#window-behavior legend, #tab-placement legend { padding: 0; margin-bottom: 8px; font-size: 12px; font-weight: 650; }
 .window-behavior-row { display: grid; grid-template-columns: minmax(220px, 1fr) minmax(0, 2fr); align-items: center; gap: 28px; padding: 4px 0; }
 .window-behavior-row label { display: flex; align-items: center; gap: 6px; min-height: 44px; cursor: pointer; }
 .window-behavior-row input { flex-shrink: 0; }
 @media (max-width: 720px) { .window-behavior-row { grid-template-columns: 1fr; gap: 0; padding: 6px 0; } }
-.search-window-settings .note { margin: 0; }
-.search-window-settings #window-save-notice { margin-top: 12px; }
+.search-window-settings .note, .search-tab-settings .note { margin: 0; }
+.search-window-settings #window-save-notice, .search-tab-settings #tab-save-notice { margin-top: 12px; }
 .popup-settings .note { margin: 12px 0; }
 .popup-controls { display: flex; align-items: flex-end; gap: 20px; flex-wrap: wrap; }
 .popup-controls label { flex: 1; min-width: 140px; }
