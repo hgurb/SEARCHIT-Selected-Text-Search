@@ -29,16 +29,17 @@
       <p>Search a website for a sample word, copy the results URL, and replace that word with <code>#SEARCHIT#</code>.</p>
       <div class="example">https://www.imdb.com/find/?q=<b>#SEARCHIT#</b></div>
     </section>
-    <form id="settings" novalidate>
       <div class="settings-toolbar">
         <h2>Settings</h2>
-        <span id="status-top"></span>
+        <span id="status-top" role="status" aria-live="polite"></span>
         <button id="reset-top" type="button">Reset to defaults</button>
         <button id="discard-top" type="button">Discard changes</button>
-        <button id="save-top" class="primary" type="submit">Save changes</button>
+        <button id="save-top" class="primary" type="submit" form="settings">Save changes</button>
       </div>
-      <section class="popup-settings" aria-labelledby="popup-heading">
-        <h2 id="popup-heading">Quick popup</h2>
+    <form id="settings" novalidate>
+      <details class="popup-settings settings-section settings-card">
+        <summary id="popup-heading"><span class="settings-summary-line"><span>Quick popup</span><span id="popup-current" class="settings-current">Off</span></span></summary>
+        <div class="settings-section-content">
         <p class="note">Show clickable site icons beside selected text. Enabling this feature requests access to ordinary webpages. Save changes to apply your choices.</p>
         <div class="popup-controls">
           <button id="popup-enabled" type="button" role="switch" aria-checked="false">Quick popup: Off</button>
@@ -47,15 +48,42 @@
           <label for="popup-columns">Icons per row <span class="hint">(0 = unlimited)</span><input id="popup-columns" type="number" min="0" step="1" value="8" required></label>
         </div>
         <p id="popup-status" class="note" role="status" aria-live="polite"></p>
-      </section>
-      <div class="section-heading"><h2>Search options <span id="count"></span></h2><button id="add" type="button">+ Add new</button></div>
+        </div>
+      </details>
+      <details class="search-window-settings settings-section settings-card">
+        <summary id="search-window-heading"><span class="settings-summary-line"><span>Search windows</span><span id="window-current" class="settings-current">Always open a new window</span></span></summary>
+        <div class="settings-section-content">
+        <fieldset id="window-behavior" aria-describedby="window-behavior-help">
+          <legend>Search window behavior</legend>
+          <div class="window-behavior-row">
+            <label for="window-mode-always-new"><input id="window-mode-always-new" type="radio" name="window-behavior" value="always-new" aria-describedby="window-description-always-new" checked> Always open a new window</label>
+            <p id="window-description-always-new" class="note">Every search opens its own separate window.</p>
+          </div>
+          <div class="window-behavior-row">
+            <label for="window-mode-source-tab"><input id="window-mode-source-tab" type="radio" name="window-behavior" value="source-tab" aria-describedby="window-description-source-tab"> Reuse by source tab</label>
+            <p id="window-description-source-tab" class="note">Searches from the same tab share one window, even across different websites. Other source tabs get separate windows.</p>
+          </div>
+          <div class="window-behavior-row">
+            <label for="window-mode-search-link"><input id="window-mode-search-link" type="radio" name="window-behavior" value="search-link" aria-describedby="window-description-search-link"> Reuse by search link</label>
+            <p id="window-description-search-link" class="note">Searches using the same full configured search link share one window, even from different tabs. Different search links get separate windows.</p>
+          </div>
+          <div class="window-behavior-row">
+            <label for="window-mode-shared-window"><input id="window-mode-shared-window" type="radio" name="window-behavior" value="shared-window" aria-describedby="window-description-shared-window"> Reuse one window for all searches</label>
+            <p id="window-description-shared-window" class="note">All New window searches share one dedicated window, regardless of website or source tab. It is reused until you close it.</p>
+          </div>
+        </fieldset>
+        <p id="window-behavior-help" class="note">Applies only to sites with New window selected. Reused windows open each search in a new tab. If a window is closed, the next search creates a replacement.</p>
+        </div>
+      </details>
+      <section class="settings-card search-options" aria-labelledby="search-options-heading">
+      <div class="section-heading"><h2 id="search-options-heading">Search options <span id="count"></span></h2><button id="add" type="button">+ Add new</button></div>
       <div id="options"></div>
       <p id="empty" hidden>No search options yet. Add a website to get started.</p>
       <div class="list-actions"><button id="add-bottom" type="button">+ Add new</button></div>
       <p class="note">Site icons come from Chrome’s favicon service and may appear after you visit the website. Chrome uses one extension icon for the right-click submenu.</p>
-      <p class="note">Choose New window to open each search in a separate regular window, or Incognito for private searches. Only one can be selected per website. Enable “Allow in Incognito” in Chrome's extension settings to reuse existing incognito windows.</p>
+      <p class="note">Choose New window for regular search windows, or Incognito for private searches. Choose a window behavior above to group searches by source tab, search link, or all together. Only one can be selected per website. Enable “Allow in Incognito” in Chrome's extension settings to reuse existing incognito windows.</p>
       <p class="note">Enabled controls both menus. Quick popup controls whether an enabled site also appears in the icon bar.</p>
-      <footer><span id="status" role="status" aria-live="polite"></span><button id="reset" type="button">Reset to defaults</button><button id="discard" type="button">Discard changes</button><button id="save" class="primary" type="submit">Save changes</button></footer>
+      </section>
     </form>
     <details class="transfer">
       <summary>Import &amp; export</summary>
@@ -73,17 +101,20 @@
         <section aria-labelledby="changelog-120">
           <h3 id="changelog-120">Version 1.2.0</h3>
           <ul>
+            <li><strong>[NEW]</strong> Choose separate search windows for every search, reuse by source tab or search link, or keep all New window searches in one dedicated window.</li>
             <li><strong>[NEW]</strong> Open a website’s searches in a new window from either menu, with a shortcut-arrow badge in the quick popup. New window and Incognito are mutually exclusive.</li>
-            <li>Imports now load into settings for review before saving. Use Discard changes to restore your saved options.</li>
             <li><strong>[NEW]</strong> Choose a different website’s favicon for each search option, with a preview in settings and support for import and export.</li>
             <li><strong>[NEW]</strong> Added a collapsible <strong>Changelog</strong> at the bottom of settings to show what is new in each version.</li>
+            <li>Settings and quick popup themes follow the system by default and remember manual light or dark choices.</li>
+            <li>Quick popup and Search windows settings are collapsible. Save, Discard, and Reset stay visible while scrolling.</li>
+            <li>Imports now load into settings for review before saving. Use Discard changes to restore your saved options.</li>
           </ul>
         </section>
         <section aria-labelledby="changelog-111">
           <h3 id="changelog-111">Version 1.1.1</h3>
           <ul>
-            <li>Renamed the extension to <strong>SEARCHIT Selected Text Search</strong>.</li>
             <li><strong>[NEW]</strong> Added an <strong>Add new</strong> button below the website list.</li>
+            <li>Renamed the extension to <strong>SEARCHIT Selected Text Search</strong>.</li>
             <li>Improved quick popup reliability.</li>
             <li>Fixed an issue that could cause duplicate search-menu errors when reloading the extension.</li>
           </ul>
@@ -92,8 +123,8 @@
           <h3 id="changelog-110">Version 1.1.0</h3>
           <ul>
             <li><strong>[NEW]</strong> Added an optional <strong>quick popup</strong> with clickable website icons beside selected text.</li>
-            <li>Updated import and export to include per-site popup settings and labels.</li>
             <li><strong>[NEW]</strong> Added <strong>Reset to defaults</strong> and placed Save, Discard, and Reset buttons at both the top and bottom of settings.</li>
+            <li>Updated import and export to include per-site popup settings and labels.</li>
           </ul>
         </section>
       </div>

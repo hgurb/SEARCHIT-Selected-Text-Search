@@ -1,4 +1,4 @@
-import { readOptions, validateOption, validateFaviconUrl, faviconPageUrl, TOKEN, DEFAULT_OPTIONS } from './search.js';
+import { readOptions, validateOption, validateFaviconUrl, faviconPageUrl, TOKEN, DEFAULT_OPTIONS, DEFAULT_SEARCH_SETTINGS, readSearchSettings } from './search.js';
 import { exportOptions, importOptions } from './transfer.js';
 import { limitPopupLabel } from './popup-label.js';
 import { DEFAULT_POPUP, POPUP_ORIGINS, readPopup } from './popup-settings.js';
@@ -12,10 +12,12 @@ document.querySelector('.changelog-link').addEventListener('click', event => {
 });
 
 const list = document.querySelector('#options');
-const status = document.querySelector('#status');
-const statusTop = document.querySelector('#status-top');
-new MutationObserver(() => { statusTop.textContent = status.textContent; }).observe(status, { childList: true, subtree: true, characterData: true });
-const saveButtons = [document.querySelector('#save'), document.querySelector('#save-top')];
+const status = document.querySelector('#status-top');
+const toolbar = document.querySelector('.settings-toolbar');
+new ResizeObserver(() => {
+  document.documentElement.style.setProperty('--settings-toolbar-height', toolbar.getBoundingClientRect().height + 'px');
+}).observe(toolbar);
+const saveButtons = [document.querySelector('#save-top')];
 const importSave = document.querySelector('#import-save');
 let importReady = false;
 let saving = false;
@@ -28,14 +30,32 @@ function disableSave(disabled) {
   saveButtons.forEach(button => { button.disabled = disabled; });
   importSave.disabled = disabled || !importReady;
 }
-document.querySelector('#reset-top').addEventListener('click', () => document.querySelector('#reset').click());
-document.querySelector('#discard-top').addEventListener('click', () => document.querySelector('#discard').click());
+
 let saved = [];
 let dirty = false;
 let savedPopup = { ...DEFAULT_POPUP };
+let savedSearchSettings = { ...DEFAULT_SEARCH_SETTINGS };
+const windowBehavior = document.querySelector('#window-behavior');
+windowBehavior.addEventListener('change', () => { updateWindowSummary(); markDirty(); });
+function updateWindowSummary() {
+  document.querySelector('#window-current').textContent = windowBehavior.querySelector('input:checked')?.closest('label').textContent.trim() ?? 'Always open a new window';
+}
+function renderWindowBehavior(value) {
+  for (const radio of windowBehavior.querySelectorAll('input[type="radio"]')) radio.checked = radio.value === value;
+  updateWindowSummary();
+}
+function collectWindowBehavior() {
+  return windowBehavior.querySelector('input:checked')?.value ?? DEFAULT_SEARCH_SETTINGS.windowBehavior;
+}
 let popupEnabled = false;
 const popupButton = document.querySelector('#popup-enabled');
 const popupTheme = document.querySelector('#popup-theme');
+const systemTheme = matchMedia('(prefers-color-scheme: dark)');
+let popupThemePreference = DEFAULT_POPUP.theme;
+function renderPopupTheme() {
+  popupTheme.value = popupThemePreference === 'system' ? (systemTheme.matches ? 'dark' : 'light') : popupThemePreference;
+}
+systemTheme.addEventListener('change', () => { if (popupThemePreference === 'system') renderPopupTheme(); });
 const popupPosition = document.querySelector('#popup-position');
 const popupColumns = document.querySelector('#popup-columns');
 const popupStatus = document.querySelector('#popup-status');
@@ -43,11 +63,13 @@ function renderPopup(settings) {
   popupEnabled = settings.enabled;
   popupButton.setAttribute('aria-checked', String(popupEnabled));
   popupButton.textContent = `Quick popup: ${popupEnabled ? 'On' : 'Off'}`;
-  popupTheme.value = settings.theme;
+  popupThemePreference = settings.theme;
+  renderPopupTheme();
   popupPosition.value = settings.position;
   popupColumns.value = settings.iconsPerRow ?? 8;
+  document.querySelector('#popup-current').textContent = popupEnabled ? 'On' : 'Off';
 }
-function collectPopup() { return { enabled: popupEnabled, theme: popupTheme.value, position: popupPosition.value, iconsPerRow: Number(popupColumns.value) }; }
+function collectPopup() { return { enabled: popupEnabled, theme: popupThemePreference, position: popupPosition.value, iconsPerRow: Number(popupColumns.value) }; }
 popupButton.addEventListener('click', async () => {
   popupButton.disabled = true;
   try {
@@ -61,7 +83,7 @@ popupButton.addEventListener('click', async () => {
   } catch { popupStatus.textContent = 'Could not change website access. Try again.'; }
   finally { popupButton.disabled = false; }
 });
-popupTheme.addEventListener('change', markDirty);
+popupTheme.addEventListener('change', () => { popupThemePreference = popupTheme.value; markDirty(); });
 popupPosition.addEventListener('change', markDirty);
 popupColumns.addEventListener('input', markDirty);
 chrome.permissions.onRemoved.addListener(async () => {
@@ -199,10 +221,11 @@ document.querySelectorAll('#add, #add-bottom').forEach(button => button.addEvent
   const row = addRow({ id: crypto.randomUUID(), name: '', url: '', enabled: true });
   markDirty(); row.querySelector('.name').focus();
 }));
-document.querySelector('#discard').addEventListener('click', () => { render(saved); renderPopup(savedPopup); popupStatus.textContent = ''; setImportReady(false); importNotice.hidden = true; transferStatus.textContent = ''; dirty = false; status.textContent = 'Changes discarded'; });
-document.querySelector('#reset').addEventListener('click', () => {
+document.querySelector('#discard-top').addEventListener('click', () => { render(saved); renderPopup(savedPopup); renderWindowBehavior(savedSearchSettings.windowBehavior); popupStatus.textContent = ''; setImportReady(false); importNotice.hidden = true; transferStatus.textContent = ''; dirty = false; status.textContent = 'Changes discarded'; });
+document.querySelector('#reset-top').addEventListener('click', () => {
   render(DEFAULT_OPTIONS.map(option => ({ ...option })));
   renderPopup(DEFAULT_POPUP);
+  renderWindowBehavior(DEFAULT_SEARCH_SETTINGS.windowBehavior);
   popupStatus.textContent = '';
   markDirty();
   setImportReady(false);
@@ -241,6 +264,7 @@ document.querySelector('#settings').addEventListener('submit', async event => {
   event.preventDefault();
   if (saving || (event.submitter === importSave && !importReady)) return;
   if (!popupColumns.checkValidity() || !Number.isSafeInteger(Number(popupColumns.value))) {
+    document.querySelector('.popup-settings').open = true;
     status.textContent = 'Icons per row must be a whole number of at least 0.';
     popupColumns.focus();
     popupColumns.reportValidity();
@@ -253,7 +277,9 @@ document.querySelector('#settings').addEventListener('submit', async event => {
   try {
     const quickPopup = collectPopup();
     if (quickPopup.enabled && !await chrome.permissions.contains({ origins: POPUP_ORIGINS })) throw new Error('Website access is required. Enable the quick popup again.');
-    await chrome.storage.local.set({ searchOptions: options, quickPopup });
+    const searchSettings = { windowBehavior: collectWindowBehavior() };
+    await chrome.storage.local.set({ searchOptions: options, quickPopup, searchSettings });
+    savedSearchSettings = structuredClone(searchSettings);
     savedPopup = structuredClone(quickPopup);
     saved = structuredClone(options); dirty = false;
     popupStatus.textContent = '';
@@ -292,5 +318,5 @@ document.querySelector('#import').addEventListener('click', () => {
   transferStatus.textContent = `Loaded ${options.length} search options for review.`;
 });
 window.addEventListener('beforeunload', event => { if (dirty) { event.preventDefault(); event.returnValue = ''; } });
-try { [saved, savedPopup] = await Promise.all([readOptions(), readPopup()]); render(saved); renderPopup(savedPopup); }
+try { [saved, savedPopup, savedSearchSettings] = await Promise.all([readOptions(), readPopup(), readSearchSettings()]); render(saved); renderPopup(savedPopup); renderWindowBehavior(savedSearchSettings.windowBehavior); }
 catch { status.textContent = 'Could not load settings. Reload this page to try again.'; disableSave(true); }

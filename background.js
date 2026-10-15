@@ -1,8 +1,36 @@
-import { readOptions, validateOption, buildSearchUrl, faviconPageUrl } from './search.js';
+import { readOptions, validateOption, buildSearchUrl, faviconPageUrl, readSearchSettings } from './search.js';
 import { limitPopupLabel } from './popup-label.js';
 import { readPopup, POPUP_ORIGINS } from './popup-settings.js';
 
 const POPUP_SCRIPT = 'searchit-quick-popup';
+// Cache only image data, not selected text. Chrome also maintains its own favicon cache.
+const popupIcons = new Map();
+async function popupIcon(option) {
+  const icon = new URL(chrome.runtime.getURL('/_favicon/'));
+  icon.searchParams.set('pageUrl', faviconPageUrl(option));
+  icon.searchParams.set('size', '32');
+  const key = icon.href;
+  if (!popupIcons.has(key)) {
+    if (popupIcons.size >= 128) popupIcons.delete(popupIcons.keys().next().value);
+    const pending = (async () => {
+      const response = await fetch(key);
+      if (!response.ok) throw new Error('Favicon unavailable.');
+      const bytes = new Uint8Array(await response.arrayBuffer());
+      // The favicon service returns PNG images; reject unexpected or oversized responses.
+      if (bytes.length > 65536 || bytes.length < 8 || ![137, 80, 78, 71, 13, 10, 26, 10].every((byte, index) => bytes[index] === byte)) throw new Error('Invalid favicon.');
+      let binary = '';
+      for (const byte of bytes) binary += String.fromCharCode(byte);
+      return 'data:image/png;base64,' + btoa(binary);
+    })();
+    popupIcons.set(key, pending);
+  }
+  const pending = popupIcons.get(key);
+  try { return await pending; }
+  catch {
+    if (popupIcons.get(key) === pending) popupIcons.delete(key);
+    return '';
+  }
+}
 let popupQueue = Promise.resolve();
 export function syncPopup() {
   popupQueue = popupQueue.catch(() => {}).then(async () => {
@@ -35,12 +63,10 @@ chrome.runtime.onMessage.addListener((message, sender, respond) => {
     const allowed = settings.enabled && await chrome.permissions.contains({ origins: POPUP_ORIGINS });
     const options = (await readOptions()).filter(option => option.enabled !== false && option.quickPopup !== false && !validateOption(option));
     if (message.type === 'quick-popup-config') {
-      respond({ settings: { ...settings, enabled: Boolean(allowed) }, options: options.map(option => {
-        const icon = new URL(chrome.runtime.getURL('/_favicon/'));
-        icon.searchParams.set('pageUrl', faviconPageUrl(option));
-        icon.searchParams.set('size', '32');
-        return { id: option.id, name: option.name, incognito: option.incognito === true, newWindow: option.newWindow === true && option.incognito !== true, popupLabel: limitPopupLabel(option.popupLabel), icon: icon.href };
-      }) });
+      respond({ settings: { ...settings, enabled: Boolean(allowed) }, options: await Promise.all(options.map(async option => {
+        const icon = allowed ? await popupIcon(option) : '';
+        return { id: option.id, name: option.name, incognito: option.incognito === true, newWindow: option.newWindow === true && option.incognito !== true, popupLabel: limitPopupLabel(option.popupLabel), icon };
+      })) });
     } else {
       const option = options.find(item => item.id === message.id);
       if (!allowed || !option || typeof message.text !== 'string' || !message.text.trim()) throw new Error('Search unavailable.');
@@ -88,10 +114,74 @@ export function rebuildMenus() {
 
 const refresh = () => rebuildMenus().catch(error => console.error('Could not update search menu:', error));
 
+// Only in-flight work lives here; window associations survive worker suspension in session storage.
+const searchWindowQueues = new Map();
+const searchWindowKey = tabId => `searchit-window-${tabId}`;
+
+async function searchLinkWindowKey(template) {
+  const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(template.trim()));
+  return 'searchit-link-window-' + Array.from(new Uint8Array(hash), byte => byte.toString(16).padStart(2, '0')).join('');
+}
+
+async function reuseSearchWindow(url, key, sourceTab) {
+  const previous = searchWindowQueues.get(key) ?? Promise.resolve();
+  const pending = (async () => {
+    await previous.catch(() => {});
+    const stored = await chrome.storage.session.get(key);
+    const windowId = stored[key];
+    let target;
+    if (Number.isInteger(windowId)) {
+      try { target = await chrome.windows.get(windowId); }
+      catch { /* A closed search window will be replaced below. */ }
+    }
+    if (target?.incognito === false && target.type === 'normal') {
+      let opened = false;
+      try {
+        await chrome.tabs.create({ url, windowId, active: true });
+        opened = true;
+      } catch { /* The window may have closed after it was checked. */ }
+      if (opened) {
+        // Focusing must not create a second copy if the search tab already opened.
+        await chrome.windows.update(windowId, { focused: true }).catch(() => {});
+        return;
+      }
+    }
+    const created = await chrome.windows.create({ url, incognito: false, type: 'normal', focused: true });
+    if (Number.isInteger(created?.id)) {
+      await chrome.storage.session.set({ [key]: created.id });
+      if (sourceTab) {
+        // Source-tab associations end when that tab closes; link associations are independent.
+        try { await chrome.tabs.get(sourceTab.id); }
+        catch { await chrome.storage.session.remove(key); }
+      }
+    }
+  })();
+  searchWindowQueues.set(key, pending);
+  try { await pending; }
+  finally { if (searchWindowQueues.get(key) === pending) searchWindowQueues.delete(key); }
+}
+
+chrome.tabs.onRemoved.addListener(tabId => {
+  chrome.storage.session.remove(searchWindowKey(tabId)).catch(error => console.error('Could not clear search window:', error));
+});
+
 export async function openSearch(option, text, sourceTab) {
   const url = buildSearchUrl(option, text);
   const incognito = option.incognito === true;
   if (option.newWindow === true && !incognito) {
+    const settings = await readSearchSettings();
+    if (settings.windowBehavior === 'shared-window') {
+      await reuseSearchWindow(url, 'searchit-shared-window');
+      return;
+    }
+    if (settings.windowBehavior === 'search-link') {
+      await reuseSearchWindow(url, await searchLinkWindowKey(option.url));
+      return;
+    }
+    if (settings.windowBehavior === 'source-tab' && Number.isInteger(sourceTab?.id) && sourceTab.id >= 0) {
+      await reuseSearchWindow(url, searchWindowKey(sourceTab.id), sourceTab);
+      return;
+    }
     await chrome.windows.create({ url, incognito: false, type: 'normal', focused: true });
     return;
   }

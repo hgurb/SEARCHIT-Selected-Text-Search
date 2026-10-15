@@ -1,4 +1,11 @@
 export const TOKEN = '#SEARCHIT#';
+export const DEFAULT_SEARCH_SETTINGS = { windowBehavior: 'always-new' };
+export async function readSearchSettings() {
+  const { searchSettings } = await chrome.storage.local.get('searchSettings');
+  const behavior = searchSettings?.windowBehavior;
+  return { windowBehavior: ['always-new', 'source-tab', 'search-link', 'shared-window'].includes(behavior)
+    ? behavior : behavior === undefined && searchSettings?.reuseSearchWindows === true ? 'source-tab' : 'always-new' };
+}
 export const DEFAULT_OPTIONS = [
   { id: 'imdb', name: 'IMDb', url: 'https://www.imdb.com/find/?q=#SEARCHIT#', enabled: true, incognito: false },
   { id: 'reddit', name: 'Reddit', url: 'https://www.reddit.com/search/?q=#SEARCHIT#', enabled: true, incognito: false },

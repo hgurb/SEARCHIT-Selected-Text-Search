@@ -1,6 +1,7 @@
 (() => {
   if (globalThis.searchitQuickPopup) return;
   globalThis.searchitQuickPopup = true;
+  const systemTheme = matchMedia('(prefers-color-scheme: dark)');
   let config;
   let host;
   let bar;
@@ -27,8 +28,8 @@
     style.textContent = `
       :host([hidden]) { display:none!important; }
       * { box-sizing:border-box; }
-      .bar { display:grid;grid-template-columns:repeat(var(--columns,8),28px);align-items:center;gap:2px;padding:3px;border-radius:6px;background:#fff;color:#243447;border:1px solid #e3e3e3;box-shadow:0 6px 24px #0003;pointer-events:auto;width:max-content;max-width:calc(100vw - 16px);max-height:calc(100vh - 16px);overflow:auto;font:14px system-ui,sans-serif; }
-      .bar.dark { background:#211d1a;color:#eee8e2;border-color:#4b3f35; }
+      .bar { color-scheme:light;display:grid;grid-template-columns:repeat(var(--columns,8),28px);align-items:center;gap:2px;padding:3px;border-radius:6px;background:#fff;color:#243447;border:1px solid #e3e3e3;box-shadow:0 6px 24px #0003;pointer-events:auto;width:max-content;max-width:calc(100vw - 16px);max-height:calc(100vh - 16px);overflow:auto;font:14px system-ui,sans-serif; }
+      .bar.dark { color-scheme:dark;background:#211d1a;color:#eee8e2;border-color:#4b3f35; }
       button { position:relative;display:grid;place-items:center;width:28px;height:28px;flex:0 0 28px;padding:4px;border:0;border-radius:4px;background:transparent;color:inherit;cursor:pointer;font:600 14px system-ui,sans-serif; }
       button:hover { background:#fff0e3; } .dark button:hover { background:#403329; }
       button:focus-visible { outline:2px solid #f59b54;outline-offset:-2px; }
@@ -52,10 +53,16 @@
     document.documentElement.append(host);
     hide();
   }
+  function applyTheme() {
+    if (!bar || !config) return;
+    const theme = config.settings.theme === 'system' ? (systemTheme.matches ? 'dark' : 'light') : config.settings.theme;
+    bar.className = 'bar ' + theme;
+  }
+  systemTheme.addEventListener('change', () => { if (config?.settings.theme === 'system') applyTheme(); });
   function render() {
     if (!host?.isConnected) createBar();
     bar.replaceChildren();
-    bar.className = `bar ${config.settings.theme}`;
+    applyTheme();
     for (const option of config.options) {
       const button = document.createElement('button');
       button.type = 'button';
@@ -67,7 +74,8 @@
       fallback.textContent = option.name.trim().slice(0, 1).toUpperCase();
       fallback.hidden = true;
       img.addEventListener('error', () => { img.hidden = true; fallback.hidden = false; });
-      img.src = option.icon;
+      if (typeof option.icon === 'string' && option.icon.startsWith('data:image/png;base64,')) img.src = option.icon;
+      else { img.hidden = true; fallback.hidden = false; }
       button.append(img, fallback);
       if (option.popupLabel?.trim()) {
         button.classList.add('has-label');

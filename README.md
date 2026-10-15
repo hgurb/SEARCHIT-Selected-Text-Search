@@ -23,13 +23,13 @@ Enable **Quick popup** and grant website access to show clickable site icons bes
 
 Choose **Use a different icon** beneath a search link to use another website’s icon. Custom favicon sources are included in import and export.
 
-Check **New window** to open a site’s searches in separate regular windows. New window and Incognito cannot be selected together. Both choices are included in import and export.
+Check **New window** to open a site’s searches in separate regular windows. Under **Search window behavior**, choose a new window for every search, reuse by source tab or full configured search link, or reuse one dedicated window for all New window searches. Reused windows open each search in a new tab. New window and Incognito cannot be selected together. Both choices are included in import and export.
 
 Check **Incognito** for a site to open its searches in a private window. Enable **Allow in Incognito** in Chrome's extension settings to reuse existing private windows.
 
 ## Import and export
 
-Use **Export & copy** to copy your website list. Paste it into another instance and click **Import & review** to review the replacement list. Click **Save changes** to apply it, or **Discard changes** to restore your saved list. Global popup preferences and the settings theme are not included.
+Use **Export & copy** to copy your website list. Paste it into another instance and click **Import & review** to review the replacement list. Click **Save changes** to apply it, or **Discard changes** to restore your saved list. Global preferences and the settings theme are not included.
 
 ## Privacy
 
