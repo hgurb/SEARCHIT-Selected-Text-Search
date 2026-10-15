@@ -25,6 +25,7 @@ html { scroll-padding-top: calc(var(--settings-toolbar-height, 100px) + 12px); }
 .window-behavior-row input { flex-shrink: 0; }
 @media (max-width: 720px) { .window-behavior-row { grid-template-columns: 1fr; gap: 0; padding: 6px 0; } }
 .search-window-settings .note { margin: 0; }
+.search-window-settings #window-save-notice { margin-top: 12px; }
 .popup-settings .note { margin: 12px 0; }
 .popup-controls { display: flex; align-items: flex-end; gap: 20px; flex-wrap: wrap; }
 .popup-controls label { flex: 1; min-width: 140px; }

@@ -68,11 +68,12 @@
             <p id="window-description-search-link" class="note">Searches using the same full configured search link share one window, even from different tabs. Different search links get separate windows.</p>
           </div>
           <div class="window-behavior-row">
-            <label for="window-mode-shared-window"><input id="window-mode-shared-window" type="radio" name="window-behavior" value="shared-window" aria-describedby="window-description-shared-window"> Reuse one window for all searches</label>
-            <p id="window-description-shared-window" class="note">All New window searches share one dedicated window, regardless of website or source tab. It is reused until you close it.</p>
+            <label for="window-mode-shared-window"><input id="window-mode-shared-window" type="radio" name="window-behavior" value="shared-window" aria-describedby="window-description-shared-window"> Reuse by source window</label>
+            <p id="window-description-shared-window" class="note">Searches from the same browser window share one dedicated search window, regardless of website or tab. Searching from that destination window opens a separate search window of its own.</p>
           </div>
         </fieldset>
         <p id="window-behavior-help" class="note">Applies only to sites with New window selected. Reused windows open each search in a new tab. If a window is closed, the next search creates a replacement.</p>
+        <p id="window-save-notice" class="note" role="status" aria-live="polite" hidden>Save changes to apply this choice.</p>
         </div>
       </details>
       <section class="settings-card search-options" aria-labelledby="search-options-heading">
@@ -81,8 +82,9 @@
       <p id="empty" hidden>No search options yet. Add a website to get started.</p>
       <div class="list-actions"><button id="add-bottom" type="button">+ Add new</button></div>
       <p class="note">Site icons come from Chrome’s favicon service and may appear after you visit the website. Chrome uses one extension icon for the right-click submenu.</p>
-      <p class="note">Choose New window for regular search windows, or Incognito for private searches. Choose a window behavior above to group searches by source tab, search link, or all together. Only one can be selected per website. Enable “Allow in Incognito” in Chrome's extension settings to reuse existing incognito windows.</p>
+      <p class="note">Choose New window for regular search windows, or Incognito for private searches. Choose a window behavior above to group searches by source tab, search link, or source window. Only one can be selected per website. Enable “Allow in Incognito” in Chrome's extension settings to reuse existing incognito windows.</p>
       <p class="note">Enabled controls both menus. Quick popup controls whether an enabled site also appears in the icon bar.</p>
+      <p id="options-save-notice" class="note" role="status" aria-live="polite" hidden>Save changes to apply your search options.</p>
       </section>
     </form>
     <details class="transfer">
@@ -101,7 +103,7 @@
         <section aria-labelledby="changelog-120">
           <h3 id="changelog-120">Version 1.2.0</h3>
           <ul>
-            <li><strong>[NEW]</strong> Choose separate search windows for every search, reuse by source tab or search link, or keep all New window searches in one dedicated window.</li>
+            <li><strong>[NEW]</strong> Choose separate search windows for every search, reuse by source tab, search link, or source window.</li>
             <li><strong>[NEW]</strong> Open a website’s searches in a new window from either menu, with a shortcut-arrow badge in the quick popup. New window and Incognito are mutually exclusive.</li>
             <li><strong>[NEW]</strong> Choose a different website’s favicon for each search option, with a preview in settings and support for import and export.</li>
             <li><strong>[NEW]</strong> Added a collapsible <strong>Changelog</strong> at the bottom of settings to show what is new in each version.</li>

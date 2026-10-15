@@ -117,13 +117,14 @@ const refresh = () => rebuildMenus().catch(error => console.error('Could not upd
 // Only in-flight work lives here; window associations survive worker suspension in session storage.
 const searchWindowQueues = new Map();
 const searchWindowKey = tabId => `searchit-window-${tabId}`;
+const sourceWindowKey = windowId => `searchit-source-window-${windowId}`;
 
 async function searchLinkWindowKey(template) {
   const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(template.trim()));
   return 'searchit-link-window-' + Array.from(new Uint8Array(hash), byte => byte.toString(16).padStart(2, '0')).join('');
 }
 
-async function reuseSearchWindow(url, key, sourceTab) {
+async function reuseSearchWindow(url, key, sourceTab, sourceWindowId) {
   const previous = searchWindowQueues.get(key) ?? Promise.resolve();
   const pending = (async () => {
     await previous.catch(() => {});
@@ -134,7 +135,7 @@ async function reuseSearchWindow(url, key, sourceTab) {
       try { target = await chrome.windows.get(windowId); }
       catch { /* A closed search window will be replaced below. */ }
     }
-    if (target?.incognito === false && target.type === 'normal') {
+    if (target?.incognito === false && target.type === 'normal' && target.id !== sourceWindowId) {
       let opened = false;
       try {
         await chrome.tabs.create({ url, windowId, active: true });
@@ -149,7 +150,10 @@ async function reuseSearchWindow(url, key, sourceTab) {
     const created = await chrome.windows.create({ url, incognito: false, type: 'normal', focused: true });
     if (Number.isInteger(created?.id)) {
       await chrome.storage.session.set({ [key]: created.id });
-      if (sourceTab) {
+      if (sourceWindowId !== undefined) {
+        try { await chrome.windows.get(sourceWindowId); }
+        catch { await chrome.storage.session.remove(key); }
+      } else if (sourceTab) {
         // Source-tab associations end when that tab closes; link associations are independent.
         try { await chrome.tabs.get(sourceTab.id); }
         catch { await chrome.storage.session.remove(key); }
@@ -165,13 +169,17 @@ chrome.tabs.onRemoved.addListener(tabId => {
   chrome.storage.session.remove(searchWindowKey(tabId)).catch(error => console.error('Could not clear search window:', error));
 });
 
+chrome.windows.onRemoved.addListener(windowId => {
+  chrome.storage.session.remove(sourceWindowKey(windowId)).catch(error => console.error('Could not clear source window:', error));
+});
+
 export async function openSearch(option, text, sourceTab) {
   const url = buildSearchUrl(option, text);
   const incognito = option.incognito === true;
   if (option.newWindow === true && !incognito) {
     const settings = await readSearchSettings();
-    if (settings.windowBehavior === 'shared-window') {
-      await reuseSearchWindow(url, 'searchit-shared-window');
+    if (settings.windowBehavior === 'shared-window' && Number.isInteger(sourceTab?.windowId) && sourceTab.windowId >= 0) {
+      await reuseSearchWindow(url, sourceWindowKey(sourceTab.windowId), undefined, sourceTab.windowId);
       return;
     }
     if (settings.windowBehavior === 'search-link') {

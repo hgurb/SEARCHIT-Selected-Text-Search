@@ -34,10 +34,11 @@ function disableSave(disabled) {
 let saved = [];
 let dirty = false;
 let editRevision = 0;
+const changedSections = new Map();
 let savedPopup = { ...DEFAULT_POPUP };
 let savedSearchSettings = { ...DEFAULT_SEARCH_SETTINGS };
 const windowBehavior = document.querySelector('#window-behavior');
-windowBehavior.addEventListener('change', () => { updateWindowSummary(); markDirty(); });
+windowBehavior.addEventListener('change', () => { updateWindowSummary(); markDirty('windows'); });
 function updateWindowSummary() {
   document.querySelector('#window-current').textContent = windowBehavior.querySelector('input:checked')?.closest('label').textContent.trim() ?? 'Always open a new window';
 }
@@ -80,13 +81,13 @@ popupButton.addEventListener('click', async () => {
     }
     renderPopup({ ...collectPopup(), enabled: !popupEnabled });
     popupStatus.textContent = 'Save changes to apply this choice.';
-    markDirty();
+    markDirty('popup');
   } catch { popupStatus.textContent = 'Could not change website access. Try again.'; }
   finally { popupButton.disabled = false; }
 });
-popupTheme.addEventListener('change', () => { popupThemePreference = popupTheme.value; markDirty(); });
-popupPosition.addEventListener('change', markDirty);
-popupColumns.addEventListener('input', markDirty);
+popupTheme.addEventListener('change', () => { popupThemePreference = popupTheme.value; markDirty('popup'); });
+popupPosition.addEventListener('change', () => markDirty('popup'));
+popupColumns.addEventListener('input', () => markDirty('popup'));
 chrome.permissions.onRemoved.addListener(async () => {
   if (!await chrome.permissions.contains({ origins: POPUP_ORIGINS })) {
     renderPopup({ ...collectPopup(), enabled: false });
@@ -95,7 +96,19 @@ chrome.permissions.onRemoved.addListener(async () => {
   }
 });
 
-function markDirty() { editRevision++; dirty = true; status.textContent = 'Unsaved changes'; }
+function renderSaveNotices() {
+  document.querySelector('#window-save-notice').hidden = !changedSections.has('windows');
+  document.querySelector('#options-save-notice').hidden = !changedSections.has('options');
+  if (changedSections.has('popup')) popupStatus.textContent = 'Save changes to apply this choice.';
+  else if (popupStatus.textContent === 'Save changes to apply this choice.') popupStatus.textContent = '';
+}
+function markDirty(section = 'options') {
+  editRevision++;
+  dirty = true;
+  for (const key of section === 'all' ? ['popup', 'windows', 'options'] : [section]) changedSections.set(key, editRevision);
+  renderSaveNotices();
+  status.textContent = 'Unsaved changes';
+}
 function updateCount() {
   const rows = [...list.children];
   document.querySelector('#count').textContent = `${rows.length} sites`;
@@ -222,13 +235,13 @@ document.querySelectorAll('#add, #add-bottom').forEach(button => button.addEvent
   const row = addRow({ id: crypto.randomUUID(), name: '', url: '', enabled: true });
   markDirty(); row.querySelector('.name').focus();
 }));
-document.querySelector('#discard-top').addEventListener('click', () => { editRevision++; render(saved); renderPopup(savedPopup); renderWindowBehavior(savedSearchSettings.windowBehavior); popupStatus.textContent = ''; setImportReady(false); importNotice.hidden = true; transferStatus.textContent = ''; dirty = false; status.textContent = 'Changes discarded'; });
+document.querySelector('#discard-top').addEventListener('click', () => { editRevision++; render(saved); renderPopup(savedPopup); renderWindowBehavior(savedSearchSettings.windowBehavior); popupStatus.textContent = ''; changedSections.clear(); if (saving) for (const key of ['popup', 'windows', 'options']) changedSections.set(key, editRevision); renderSaveNotices(); setImportReady(false); importNotice.hidden = true; transferStatus.textContent = ''; dirty = false; status.textContent = 'Changes discarded'; });
 document.querySelector('#reset-top').addEventListener('click', () => {
   render(DEFAULT_OPTIONS.map(option => ({ ...option })));
   renderPopup(DEFAULT_POPUP);
   renderWindowBehavior(DEFAULT_SEARCH_SETTINGS.windowBehavior);
   popupStatus.textContent = '';
-  markDirty();
+  markDirty('all');
   setImportReady(false);
   importNotice.hidden = true;
   transferStatus.textContent = '';
@@ -285,6 +298,8 @@ document.querySelector('#settings').addEventListener('submit', async event => {
     savedPopup = structuredClone(quickPopup);
     saved = structuredClone(options);
     dirty = editRevision !== saveRevision;
+    for (const [section, revision] of changedSections) if (revision <= saveRevision) changedSections.delete(section);
+    renderSaveNotices();
     if (dirty) {
       status.textContent = 'Earlier changes saved. Newer edits are unsaved.';
     } else {
