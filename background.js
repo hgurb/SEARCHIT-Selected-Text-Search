@@ -1,4 +1,4 @@
-import { readOptions, validateOption, buildSearchUrl } from './search.js';
+import { readOptions, validateOption, buildSearchUrl, faviconPageUrl } from './search.js';
 import { limitPopupLabel } from './popup-label.js';
 import { readPopup, POPUP_ORIGINS } from './popup-settings.js';
 
@@ -37,9 +37,9 @@ chrome.runtime.onMessage.addListener((message, sender, respond) => {
     if (message.type === 'quick-popup-config') {
       respond({ settings: { ...settings, enabled: Boolean(allowed) }, options: options.map(option => {
         const icon = new URL(chrome.runtime.getURL('/_favicon/'));
-        icon.searchParams.set('pageUrl', new URL(option.url.replace(/#searchit#/gi, 'example')).origin);
+        icon.searchParams.set('pageUrl', faviconPageUrl(option));
         icon.searchParams.set('size', '32');
-        return { id: option.id, name: option.name, incognito: option.incognito === true, popupLabel: limitPopupLabel(option.popupLabel), icon: icon.href };
+        return { id: option.id, name: option.name, incognito: option.incognito === true, newWindow: option.newWindow === true && option.incognito !== true, popupLabel: limitPopupLabel(option.popupLabel), icon: icon.href };
       }) });
     } else {
       const option = options.find(item => item.id === message.id);
@@ -80,7 +80,7 @@ export function rebuildMenus() {
     if (!enabled.length) return;
     await createMenu({ id: 'search-root', title: 'Search selected text', contexts: ['selection'] });
     for (const option of enabled) {
-      await createMenu({ id: `search:${option.id}`, parentId: 'search-root', title: `${option.name.replaceAll('%', '％')}${option.incognito === true ? ' (Incognito)' : ''}`, contexts: ['selection'] });
+      await createMenu({ id: `search:${option.id}`, parentId: 'search-root', title: `${option.name.replaceAll('%', '％')}${option.incognito === true ? ' (Incognito)' : option.newWindow === true ? ' (New window)' : ''}`, contexts: ['selection'] });
     }
   });
   return menuQueue;
@@ -91,6 +91,10 @@ const refresh = () => rebuildMenus().catch(error => console.error('Could not upd
 export async function openSearch(option, text, sourceTab) {
   const url = buildSearchUrl(option, text);
   const incognito = option.incognito === true;
+  if (option.newWindow === true && !incognito) {
+    await chrome.windows.create({ url, incognito: false, type: 'normal', focused: true });
+    return;
+  }
   // A regular source window is already known to be usable for regular searches.
   if (!incognito && sourceTab?.incognito === false) {
     await chrome.tabs.create({ url, windowId: sourceTab.windowId });

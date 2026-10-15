@@ -18,6 +18,22 @@ export function validateOption(option) {
   return '';
 }
 
+// Favicon sources are independent of search destinations.
+export function validateFaviconUrl(value) {
+  if (value === undefined || value === '') return '';
+  if (typeof value !== 'string') return 'Enter a complete https:// or http:// favicon website URL.';
+  try {
+    const url = new URL(value.trim());
+    if (!['https:', 'http:'].includes(url.protocol) || url.username || url.password) throw new Error();
+  } catch { return 'Enter a complete https:// or http:// favicon website URL without login credentials.'; }
+  return '';
+}
+
+export function faviconPageUrl(option) {
+  if (option.faviconUrl && !validateFaviconUrl(option.faviconUrl)) return new URL(option.faviconUrl.trim()).href;
+  return new URL(option.url.replace(/#searchit#/gi, 'example')).origin;
+}
+
 export function buildSearchUrl(option, text) {
   const error = validateOption(option);
   if (error) throw new Error(error);

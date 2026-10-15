@@ -1,4 +1,4 @@
-import { validateOption } from './search.js';
+import { validateOption, validateFaviconUrl } from './search.js';
 import { limitPopupLabel } from './popup-label.js';
 
 const PREFIX = 'SEARCHIT:v1:';
@@ -10,9 +10,13 @@ function checkOptions(options) {
     if (error) throw new Error(`Search option ${index + 1}: ${error}`);
     if (typeof option.enabled !== 'boolean') throw new Error(`Search option ${index + 1}: Invalid enabled state.`);
     if (option.incognito !== undefined && typeof option.incognito !== 'boolean') throw new Error(`Search option ${index + 1}: Invalid incognito state.`);
+    if (option.newWindow !== undefined && typeof option.newWindow !== 'boolean') throw new Error(`Search option ${index + 1}: Invalid new window state.`);
+    if (option.newWindow === true && option.incognito === true) throw new Error(`Search option ${index + 1}: New window and Incognito cannot both be selected.`);
     if (option.quickPopup !== undefined && typeof option.quickPopup !== 'boolean') throw new Error(`Search option ${index + 1}: Invalid quick popup state.`);
     if (option.popupLabel !== undefined && (typeof option.popupLabel !== 'string' || limitPopupLabel(option.popupLabel) !== option.popupLabel)) throw new Error(`Search option ${index + 1}: Popup labels must contain at most 3 characters.`);
-    return { name: option.name.trim(), url: option.url.trim(), enabled: option.enabled, incognito: option.incognito === true, quickPopup: option.quickPopup !== false, popupLabel: option.popupLabel ?? '' };
+    const faviconError = validateFaviconUrl(option.faviconUrl);
+    if (faviconError) throw new Error(`Search option ${index + 1}: ${faviconError}`);
+    return { ...(option.faviconUrl ? { faviconUrl: option.faviconUrl.trim() } : {}), name: option.name.trim(), url: option.url.trim(), enabled: option.enabled, incognito: option.incognito === true, newWindow: option.newWindow === true, quickPopup: option.quickPopup !== false, popupLabel: option.popupLabel ?? '' };
   });
 }
 

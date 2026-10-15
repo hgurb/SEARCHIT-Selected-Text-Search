@@ -13,13 +13,16 @@
     <header>
       <div class="header-bar">
         <div class="brand"><img src="icons/icon48.png" alt="" width="40" height="40"><a class="store-link" href="https://chromewebstore.google.com/detail/searchit-right-click-sear/hdpcbfjagjalpalmfngcganeepfmjajm" target="_blank" rel="noopener noreferrer" title="View SEARCHIT on the Chrome Web Store"><span class="brand-title"><span class="brand-name">SEARCHIT</span><span class="brand-subtitle"> Selected Text Search</span></span><span aria-hidden="true">↗</span><img class="store-icon" src="icons/chrome-web-store.png" alt="" width="18" height="18"></a></div>
+        <div class="header-actions">
+          <a class="changelog-link" href="#changelog">What’s new <span aria-hidden="true">↓</span></a>
         <button id="theme-toggle" type="button" aria-label="Switch to light mode" title="Switch to light mode">
           <svg class="theme-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"/></svg>
           <svg class="theme-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 14A9 9 0 0 1 10 3.2 9 9 0 1 0 20.8 14Z"/></svg>
         </button>
+        </div>
       </div>
       <h1>Your text. Your search tools.</h1>
-      <p>Add your favorite websites, then select text on any page and right-click to search.</p>
+      <p>Add your favorite websites, then select text and search using the right-click menu or the optional quick popup.</p>
     </header>
     <section class="instructions">
       <strong>One link is all you need</strong>
@@ -50,26 +53,29 @@
       <p id="empty" hidden>No search options yet. Add a website to get started.</p>
       <div class="list-actions"><button id="add-bottom" type="button">+ Add new</button></div>
       <p class="note">Site icons come from Chrome’s favicon service and may appear after you visit the website. Chrome uses one extension icon for the right-click submenu.</p>
-      <p class="note">Check Incognito to open that site's searches in an incognito window. Enable “Allow in Incognito” in Chrome's extension settings to reuse existing incognito windows.</p>
+      <p class="note">Choose New window to open each search in a separate regular window, or Incognito for private searches. Only one can be selected per website. Enable “Allow in Incognito” in Chrome's extension settings to reuse existing incognito windows.</p>
       <p class="note">Enabled controls both menus. Quick popup controls whether an enabled site also appears in the icon bar.</p>
       <footer><span id="status" role="status" aria-live="polite"></span><button id="reset" type="button">Reset to defaults</button><button id="discard" type="button">Discard changes</button><button id="save" class="primary" type="submit">Save changes</button></footer>
     </form>
     <details class="transfer">
       <summary>Import &amp; export</summary>
       <div class="transfer-content">
-        <p class="note">Export your current search options to move them to another SEARCHIT instance. Import replaces your current list and saves it immediately.</p>
+        <p class="note">Export your current search options to move them to another SEARCHIT instance. Import loads a replacement website list into the editor for review. Save changes to apply it, or Discard changes to keep your saved list.</p>
         <label for="transfer-text">Export / import string</label>
         <textarea id="transfer-text" rows="5" spellcheck="false" placeholder="Click Export or paste a SEARCHIT export string here."></textarea>
-        <div class="transfer-actions"><button id="export" type="button">Export &amp; copy</button><button id="import" class="primary" type="button">Import &amp; save</button></div>
+        <div class="transfer-actions"><button id="export" type="button">Export &amp; copy</button><button id="import" class="primary" type="button">Import &amp; review</button><button id="import-save" class="primary" type="submit" form="settings" disabled>Save</button><span id="import-notice" class="note" role="status" aria-live="polite" hidden>Review your changes, then click Save to apply them.</span></div>
         <p id="transfer-status" role="status" aria-live="polite"></p>
       </div>
     </details>
-    <details class="transfer changelog">
+    <details id="changelog" class="transfer changelog">
       <summary>Changelog</summary>
       <div class="transfer-content changelog-content">
-        <section aria-labelledby="changelog-112">
-          <h3 id="changelog-112">Version 1.1.2</h3>
+        <section aria-labelledby="changelog-120">
+          <h3 id="changelog-120">Version 1.2.0</h3>
           <ul>
+            <li><strong>[NEW]</strong> Open a website’s searches in a new window from either menu, with a shortcut-arrow badge in the quick popup. New window and Incognito are mutually exclusive.</li>
+            <li>Imports now load into settings for review before saving. Use Discard changes to restore your saved options.</li>
+            <li><strong>[NEW]</strong> Choose a different website’s favicon for each search option, with a preview in settings and support for import and export.</li>
             <li><strong>[NEW]</strong> Added a collapsible <strong>Changelog</strong> at the bottom of settings to show what is new in each version.</li>
           </ul>
         </section>
@@ -77,8 +83,6 @@
           <h3 id="changelog-111">Version 1.1.1</h3>
           <ul>
             <li>Renamed the extension to <strong>SEARCHIT Selected Text Search</strong>.</li>
-            <li>Updated the extension icon.</li>
-            <li>Simplified right-click submenu entries to show only website names.</li>
             <li><strong>[NEW]</strong> Added an <strong>Add new</strong> button below the website list.</li>
             <li>Improved quick popup reliability.</li>
             <li>Fixed an issue that could cause duplicate search-menu errors when reloading the extension.</li>
@@ -88,15 +92,8 @@
           <h3 id="changelog-110">Version 1.1.0</h3>
           <ul>
             <li><strong>[NEW]</strong> Added an optional <strong>quick popup</strong> with clickable website icons beside selected text.</li>
-            <li><strong>[NEW]</strong> Added light and dark popup themes.</li>
-            <li><strong>[NEW]</strong> Added 12 popup positions and an adjustable number of icons per row.</li>
-            <li><strong>[NEW]</strong> Added per-site popup controls and labels of up to three characters.</li>
-            <li><strong>[NEW]</strong> Added incognito badges to popup icons.</li>
             <li>Updated import and export to include per-site popup settings and labels.</li>
             <li><strong>[NEW]</strong> Added <strong>Reset to defaults</strong> and placed Save, Discard, and Reset buttons at both the top and bottom of settings.</li>
-            <li>Improved the settings layout and renamed the import button to <strong>Import &amp; save</strong>.</li>
-            <li><strong>[NEW]</strong> Added a Chrome Web Store link to the settings header.</li>
-            <li>Refreshed the extension icon.</li>
           </ul>
         </section>
       </div>
@@ -115,9 +112,15 @@
             <button class="replace-selection" type="button" title="Insert #SEARCHIT# at the cursor or replace selected text" aria-label="Insert #SEARCHIT# at the cursor or replace selected search-link text">##</button>
           </div>
           <p class="link-error error" role="alert" hidden></p>
+          <label class="toggle favicon-toggle"><input class="custom-favicon" type="checkbox"> Use a different icon</label>
+          <div class="favicon-field" hidden>
+            <label class="favicon-url-label">Favicon website<input class="favicon-url" type="text" inputmode="url" placeholder="https://www.amazon.com" spellcheck="false" autocapitalize="off" autocomplete="url" disabled></label>
+            <p class="favicon-help hint">Use this website’s icon. Your search destination stays the same.</p>
+            <p class="favicon-error error" role="alert" hidden></p>
+          </div>
         </div>
       </div>
-      <div class="row-actions"><div class="mode-options"><label class="toggle"><input class="enabled" type="checkbox"> Enabled</label><label class="toggle"><input class="incognito" type="checkbox"> Incognito</label><label class="toggle"><input class="quick-popup" type="checkbox"> Quick popup</label></div><div class="order"><button class="up" type="button" title="Move up" aria-label="Move up">↑</button><button class="down" type="button" title="Move down" aria-label="Move down">↓</button></div><button class="remove" type="button">Remove</button><input class="popup-label" type="text" placeholder="Label" title="Popup label (up to 3 characters)" aria-label="Popup label (up to 3 characters)" spellcheck="false" autocomplete="off"></div>
+      <div class="row-actions"><div class="mode-options"><label class="toggle"><input class="enabled" type="checkbox"> Enabled</label><label class="toggle"><input class="quick-popup" type="checkbox"> Quick popup</label><label class="toggle"><input class="new-window" type="checkbox"> New window</label><label class="toggle"><input class="incognito" type="checkbox"> Incognito</label></div><div class="order"><button class="up" type="button" title="Move up" aria-label="Move up">↑</button><button class="down" type="button" title="Move down" aria-label="Move down">↓</button></div><button class="remove" type="button">Remove</button><input class="popup-label" type="text" placeholder="Label" title="Popup label (up to 3 characters)" aria-label="Popup label (up to 3 characters)" spellcheck="false" autocomplete="off"></div>
     </article>
   </template>
 </body>

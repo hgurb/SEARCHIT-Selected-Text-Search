@@ -1,14 +1,33 @@
-import { readOptions, validateOption, TOKEN, DEFAULT_OPTIONS } from './search.js';
+import { readOptions, validateOption, validateFaviconUrl, faviconPageUrl, TOKEN, DEFAULT_OPTIONS } from './search.js';
 import { exportOptions, importOptions } from './transfer.js';
 import { limitPopupLabel } from './popup-label.js';
 import { DEFAULT_POPUP, POPUP_ORIGINS, readPopup } from './popup-settings.js';
+
+document.querySelector('.changelog-link').addEventListener('click', event => {
+  event.preventDefault();
+  const changelog = document.querySelector('#changelog');
+  changelog.open = true;
+  changelog.querySelector('summary').focus({ preventScroll: true });
+  changelog.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+});
 
 const list = document.querySelector('#options');
 const status = document.querySelector('#status');
 const statusTop = document.querySelector('#status-top');
 new MutationObserver(() => { statusTop.textContent = status.textContent; }).observe(status, { childList: true, subtree: true, characterData: true });
 const saveButtons = [document.querySelector('#save'), document.querySelector('#save-top')];
-function disableSave(disabled) { saveButtons.forEach(button => { button.disabled = disabled; }); }
+const importSave = document.querySelector('#import-save');
+let importReady = false;
+let saving = false;
+function setImportReady(ready) {
+  importReady = ready;
+  importSave.disabled = saving || !ready;
+}
+function disableSave(disabled) {
+  saving = disabled;
+  saveButtons.forEach(button => { button.disabled = disabled; });
+  importSave.disabled = disabled || !importReady;
+}
 document.querySelector('#reset-top').addEventListener('click', () => document.querySelector('#reset').click());
 document.querySelector('#discard-top').addEventListener('click', () => document.querySelector('#discard').click());
 let saved = [];
@@ -68,10 +87,13 @@ function updateIcon(row) {
   const image = row.querySelector('.site-icon img');
   const fallback = row.querySelector('.site-icon span');
   try {
-    const site = new URL(row.querySelector('.url').value.replace(/#searchit#/gi, 'example'));
+    const faviconUrl = row.querySelector('.custom-favicon').checked ? row.querySelector('.favicon-url').value.trim() : '';
+    if (row.querySelector('.custom-favicon').checked && (!faviconUrl || validateFaviconUrl(faviconUrl))) throw new Error();
+    const pageUrl = faviconPageUrl({ url: row.querySelector('.url').value, faviconUrl });
+    const site = new URL(pageUrl);
     if (!['http:', 'https:'].includes(site.protocol)) throw new Error();
     const favicon = new URL(chrome.runtime.getURL('/_favicon/'));
-    favicon.searchParams.set('pageUrl', site.origin);
+    favicon.searchParams.set('pageUrl', pageUrl);
     favicon.searchParams.set('size', '32');
     image.src = favicon.href;
     image.hidden = false;
@@ -87,6 +109,35 @@ function addRow(option) {
   const urlInput = row.querySelector('.url');
   urlInput.id = `url-${option.id}`;
   row.querySelector('.url-label').htmlFor = urlInput.id;
+  const customFavicon = row.querySelector('.custom-favicon');
+  const faviconInput = row.querySelector('.favicon-url');
+  const faviconField = row.querySelector('.favicon-field');
+  faviconInput.id = `favicon-${option.id}`;
+  faviconField.id = `favicon-field-${option.id}`;
+  row.querySelector('.favicon-url-label').htmlFor = faviconInput.id;
+  customFavicon.setAttribute('aria-controls', faviconField.id);
+  row.querySelector('.favicon-help').id = `${faviconInput.id}-help`;
+  row.querySelector('.favicon-error').id = `${faviconInput.id}-error`;
+  faviconInput.setAttribute('aria-describedby', `${faviconInput.id}-help ${faviconInput.id}-error`);
+  faviconInput.value = typeof option.faviconUrl === 'string' ? option.faviconUrl : '';
+  customFavicon.checked = Boolean(faviconInput.value);
+  faviconField.hidden = !customFavicon.checked;
+  faviconInput.disabled = !customFavicon.checked;
+  faviconInput.required = customFavicon.checked;
+  customFavicon.addEventListener('change', () => {
+    faviconField.hidden = !customFavicon.checked;
+    faviconInput.disabled = !customFavicon.checked;
+    faviconInput.required = customFavicon.checked;
+    row.querySelector('.favicon-error').hidden = true;
+    faviconInput.removeAttribute('aria-invalid');
+    updateIcon(row);
+    markDirty();
+  });
+  faviconInput.addEventListener('input', () => {
+    row.querySelector('.favicon-error').hidden = true;
+    faviconInput.removeAttribute('aria-invalid');
+    updateIcon(row);
+  });
   const nameInput = row.querySelector('.name');
   row.querySelector('.link-error').id = `${urlInput.id}-error`;
   urlInput.setAttribute('aria-describedby', `${urlInput.id}-error`);
@@ -104,7 +155,12 @@ function addRow(option) {
     updateIcon(row);
   });
   row.querySelector('.enabled').checked = option.enabled !== false;
-  row.querySelector('.incognito').checked = option.incognito === true;
+  const incognito = row.querySelector('.incognito');
+  const newWindow = row.querySelector('.new-window');
+  incognito.checked = option.incognito === true;
+  newWindow.checked = option.newWindow === true && !incognito.checked;
+  incognito.addEventListener('change', () => { if (incognito.checked) newWindow.checked = false; });
+  newWindow.addEventListener('change', () => { if (newWindow.checked) incognito.checked = false; });
   row.querySelector('.quick-popup').checked = option.quickPopup !== false;
   const popupLabel = row.querySelector('.popup-label');
   popupLabel.value = limitPopupLabel(option.popupLabel);
@@ -143,24 +199,30 @@ document.querySelectorAll('#add, #add-bottom').forEach(button => button.addEvent
   const row = addRow({ id: crypto.randomUUID(), name: '', url: '', enabled: true });
   markDirty(); row.querySelector('.name').focus();
 }));
-document.querySelector('#discard').addEventListener('click', () => { render(saved); renderPopup(savedPopup); popupStatus.textContent = ''; dirty = false; status.textContent = 'Changes discarded'; });
+document.querySelector('#discard').addEventListener('click', () => { render(saved); renderPopup(savedPopup); popupStatus.textContent = ''; setImportReady(false); importNotice.hidden = true; transferStatus.textContent = ''; dirty = false; status.textContent = 'Changes discarded'; });
 document.querySelector('#reset').addEventListener('click', () => {
   render(DEFAULT_OPTIONS.map(option => ({ ...option })));
   renderPopup(DEFAULT_POPUP);
   popupStatus.textContent = '';
   markDirty();
+  setImportReady(false);
+  importNotice.hidden = true;
+  transferStatus.textContent = '';
   status.textContent = 'Defaults restored in the editor. Save to apply, or discard to undo.';
 });
 function collectOptions() {
   const options = [];
   let firstInvalid;
   for (const row of list.children) {
-    const option = { id: row.dataset.id, name: row.querySelector('.name').value.trim(), url: row.querySelector('.url').value.trim(), enabled: row.querySelector('.enabled').checked, incognito: row.querySelector('.incognito').checked, quickPopup: row.querySelector('.quick-popup').checked, popupLabel: limitPopupLabel(row.querySelector('.popup-label').value) };
+    const option = { id: row.dataset.id, name: row.querySelector('.name').value.trim(), url: row.querySelector('.url').value.trim(), enabled: row.querySelector('.enabled').checked, incognito: row.querySelector('.incognito').checked, newWindow: row.querySelector('.new-window').checked, quickPopup: row.querySelector('.quick-popup').checked, popupLabel: limitPopupLabel(row.querySelector('.popup-label').value) };
+    const customFavicon = row.querySelector('.custom-favicon').checked;
+    if (customFavicon) option.faviconUrl = row.querySelector('.favicon-url').value.trim();
+    const faviconError = customFavicon ? (!option.faviconUrl ? 'Enter a favicon website.' : validateFaviconUrl(option.faviconUrl)) : '';
     const nameError = !option.name ? 'Enter a site name.' : option.name.length > 80 ? 'Keep the site name under 81 characters.' : '';
     const linkError = validateOption({ ...option, name: 'Site' });
-    for (const [field, error] of [['name', nameError], ['link', linkError]]) {
+    for (const [field, error] of [['name', nameError], ['link', linkError], ['favicon', faviconError]]) {
       const message = row.querySelector(`.${field}-error`);
-      const input = row.querySelector(field === 'name' ? '.name' : '.url');
+      const input = row.querySelector(field === 'name' ? '.name' : field === 'favicon' ? '.favicon-url' : '.url');
       message.textContent = error;
       message.hidden = !error;
       input.setAttribute('aria-invalid', String(Boolean(error)));
@@ -177,6 +239,7 @@ function collectOptions() {
 
 document.querySelector('#settings').addEventListener('submit', async event => {
   event.preventDefault();
+  if (saving || (event.submitter === importSave && !importReady)) return;
   if (!popupColumns.checkValidity() || !Number.isSafeInteger(Number(popupColumns.value))) {
     status.textContent = 'Icons per row must be a whole number of at least 0.';
     popupColumns.focus();
@@ -194,6 +257,9 @@ document.querySelector('#settings').addEventListener('submit', async event => {
     savedPopup = structuredClone(quickPopup);
     saved = structuredClone(options); dirty = false;
     popupStatus.textContent = '';
+    setImportReady(false);
+    if (!importNotice.hidden) transferStatus.textContent = 'Imported options saved.';
+    importNotice.hidden = true;
     status.textContent = 'Saved. Your searches are ready.';
   } catch { status.textContent = 'Could not save. Your changes are still here; try again.'; }
   finally { disableSave(false); }
@@ -201,8 +267,10 @@ document.querySelector('#settings').addEventListener('submit', async event => {
 
 const transferText = document.querySelector('#transfer-text');
 const transferStatus = document.querySelector('#transfer-status');
+const importNotice = document.querySelector('#import-notice');
+transferText.addEventListener('input', () => setImportReady(false));
 document.querySelector('#export').addEventListener('click', async () => {
-  try { transferText.value = exportOptions(collectOptions()); }
+  try { transferText.value = exportOptions(collectOptions()); setImportReady(false); }
   catch (error) { transferStatus.textContent = error.message; return; }
   try {
     await navigator.clipboard.writeText(transferText.value);
@@ -212,21 +280,16 @@ document.querySelector('#export').addEventListener('click', async () => {
     transferStatus.textContent = 'Export generated. Clipboard access failed; copy the selected string manually.';
   }
 });
-document.querySelector('#import').addEventListener('click', async () => {
+document.querySelector('#import').addEventListener('click', () => {
+  setImportReady(false);
   let options;
   try { options = importOptions(transferText.value); }
   catch (error) { transferStatus.textContent = error.message; return; }
-  const importButton = document.querySelector('#import');
-  importButton.disabled = true;
-  disableSave(true);
-  try {
-    await chrome.storage.local.set({ searchOptions: options });
-    saved = structuredClone(options); render(saved);
-    dirty = JSON.stringify(collectPopup()) !== JSON.stringify(savedPopup);
-    status.textContent = dirty ? 'Imported options saved. Popup settings still have unsaved changes.' : 'Imported options saved. Your searches are ready.';
-    transferStatus.textContent = `Imported ${options.length} search options.`;
-  } catch { transferStatus.textContent = 'Could not save the import. Your existing options are still here; try again.'; }
-  finally { importButton.disabled = false; disableSave(false); }
+  render(options);
+  markDirty();
+  setImportReady(true);
+  importNotice.hidden = false;
+  transferStatus.textContent = `Loaded ${options.length} search options for review.`;
 });
 window.addEventListener('beforeunload', event => { if (dirty) { event.preventDefault(); event.returnValue = ''; } });
 try { [saved, savedPopup] = await Promise.all([readOptions(), readPopup()]); render(saved); renderPopup(savedPopup); }

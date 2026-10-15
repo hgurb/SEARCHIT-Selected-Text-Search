@@ -21,14 +21,18 @@ To add a website, copy its search results URL and replace the search term with `
 
 Enable **Quick popup** and grant website access to show clickable site icons beside selected text. Customize its theme, position, icons per row, and per-site labels. Set icons per row to `0` for unlimited.
 
+Choose **Use a different icon** beneath a search link to use another website’s icon. Custom favicon sources are included in import and export.
+
+Check **New window** to open a site’s searches in separate regular windows. New window and Incognito cannot be selected together. Both choices are included in import and export.
+
 Check **Incognito** for a site to open its searches in a private window. Enable **Allow in Incognito** in Chrome's extension settings to reuse existing private windows.
 
 ## Import and export
 
-Use **Export & copy** to copy your website list. Paste it into another instance and click **Import & save**. Import replaces the existing list. Global popup preferences and the settings theme are not included.
+Use **Export & copy** to copy your website list. Paste it into another instance and click **Import & review** to review the replacement list. Click **Save changes** to apply it, or **Discard changes** to restore your saved list. Global popup preferences and the settings theme are not included.
 
 ## Privacy
 
 Settings are stored locally. No analytics or tracking. Selected text is sent to the chosen website only when you launch a search. See [PRIVACY.md](PRIVACY.md).
 
-Version **1.1.2**. Licensed under [MIT](LICENSE).
+Version **1.2.0**. Licensed under [MIT](LICENSE).

@@ -35,6 +35,8 @@
       button:disabled { opacity:.5;cursor:wait; }
       img { display:block;width:20px;height:20px;object-fit:contain; }
       .incognito-badge { position:absolute;right:1px;top:1px;width:12px;height:12px;padding:1px;border-radius:3px;background:#fff;color:#243447;box-shadow:0 0 0 1px #0002;pointer-events:none; }
+      .new-window-badge { position:absolute;right:1px;top:1px;width:12px;height:12px;padding:1px;border-radius:2px;background:#fff;color:#226ec4;box-shadow:0 0 0 1px #0002;pointer-events:none; }
+      .dark .new-window-badge { background:#211d1a;color:#9bc8ff;box-shadow:0 0 0 1px #ffffff30; }
       .dark .incognito-badge { background:#211d1a;color:#eee8e2;box-shadow:0 0 0 1px #ffffff30; }
       .label-badge { position:absolute;right:1px;bottom:1px;max-width:26px;min-width:10px;padding:1px 2px;border-radius:3px;background:#fff;color:#243447;box-shadow:0 0 0 1px #0002;font:700 8px/10px system-ui,sans-serif;text-align:right;text-transform:uppercase;white-space:nowrap;overflow:hidden;pointer-events:none; }
       .dark .label-badge { background:#211d1a;color:#eee8e2;box-shadow:0 0 0 1px #ffffff30; }
@@ -57,7 +59,7 @@
     for (const option of config.options) {
       const button = document.createElement('button');
       button.type = 'button';
-      button.title = `Search on ${option.name}${option.incognito ? ' (Incognito)' : ''}`;
+      button.title = `Search on ${option.name}${option.incognito ? ' (Incognito)' : option.newWindow ? ' (New window)' : ''}`;
       button.setAttribute('aria-label', button.title);
       const img = document.createElement('img');
       img.alt = '';
@@ -92,6 +94,20 @@
         glasses.setAttribute('stroke-width', '2');
         badge.append(hat, glasses);
         button.append(badge);
+      } else if (option.newWindow) {
+        const badge = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        badge.setAttribute('class', 'new-window-badge');
+        badge.setAttribute('viewBox', '0 0 24 24');
+        badge.setAttribute('aria-hidden', 'true');
+        const arrow = document.createElementNS(badge.namespaceURI, 'path');
+        arrow.setAttribute('d', 'M4 21v-5a8 8 0 0 1 8-8h8M14 2l6 6-6 6');
+        arrow.setAttribute('fill', 'none');
+        arrow.setAttribute('stroke', 'currentColor');
+        arrow.setAttribute('stroke-width', '3');
+        arrow.setAttribute('stroke-linecap', 'round');
+        arrow.setAttribute('stroke-linejoin', 'round');
+        badge.append(arrow);
+        button.append(badge);
       }
       button.addEventListener('click', async () => {
         const text = selectedText;
@@ -106,7 +122,7 @@
         } catch {
           let error = bar.querySelector('.error');
           if (!error) { error = document.createElement('p'); error.className = 'error'; error.setAttribute('role', 'alert'); bar.append(error); }
-          error.textContent = 'Could not open search. Check the site’s Incognito setting and try again.';
+          error.textContent = 'Could not open search. Check the site’s window setting and try again.';
           position();
         } finally { button.disabled = false; }
       });
