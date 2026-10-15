@@ -112,3 +112,9 @@ footer { border-top: 1px solid #e8ecf2; padding-top: 20px; display: flex; align-
 @media (max-width: 500px) { main { margin: 24px auto; padding: 0 12px; }form { padding: 16px; }.option { flex-wrap: wrap; padding: 12px; gap: 10px; }.row-actions { width: 100%; justify-content: end; }footer { flex-wrap: wrap; }#status { flex-basis: 100%; } }
 
 .list-actions { display: flex; justify-content: flex-end; margin-top: 16px; }
+.changelog-content { line-height: 1.65; }
+.changelog-content h3 { margin: 0; font-size: 16px; }
+.changelog-content ul { margin: 10px 0 0; padding-left: 22px; }
+.changelog-content li + li { margin-top: 6px; }
+.changelog-content section + section { margin-top: 22px; padding-top: 20px; border-top: 1px solid #e0e6ef; }
+:root:not([data-theme="light"]) .changelog-content section + section { border-color: #463b33; }
