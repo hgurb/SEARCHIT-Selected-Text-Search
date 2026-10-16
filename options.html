@@ -116,9 +116,23 @@
     <details class="transfer">
       <summary>Import &amp; export</summary>
       <div class="transfer-content">
-        <p class="note">Export your current search options to move them to another SEARCHIT instance. Import loads a replacement website list into the editor for review. Click Save to apply it, or click Discard to keep your saved list.</p>
-        <label for="transfer-text">Export / import string</label>
-        <textarea id="transfer-text" rows="5" spellcheck="false" placeholder="Click Export or paste a SEARCHIT export string here."></textarea>
+        <p class="note">Choose which sections to export. Import loads only the included sections for review and leaves everything else unchanged. Click Save to apply them, or Discard to restore your saved settings.</p>
+        <fieldset class="export-sections">
+          <legend>Include in export</legend>
+          <div class="export-section-choices">
+            <label class="toggle"><input type="checkbox" data-export-section="quickPopup"> Quick popup</label>
+            <label class="toggle"><input type="checkbox" data-export-section="newTabBehavior"> New tab behavior</label>
+            <label class="toggle"><input type="checkbox" data-export-section="newWindowBehavior"> New window behavior</label>
+            <label class="toggle"><input type="checkbox" data-export-section="searchOptions" checked> Search options</label>
+          </div>
+        </fieldset>
+        <div class="transfer-input-heading">
+          <label for="transfer-text">Export / import string</label>
+          <button id="copy-transfer" type="button" aria-label="Copy to clipboard" title="Copy to clipboard" disabled>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h3"/></svg>
+          </button>
+        </div>
+        <textarea id="transfer-text" rows="4" spellcheck="false" placeholder="Click Export or paste a SEARCHIT export string here."></textarea>
         <div class="transfer-actions"><button id="export" type="button">Export &amp; copy</button><button id="import" class="primary" type="button">Import &amp; review</button><button id="import-save" class="primary" type="submit" form="settings" disabled>Save</button><span id="import-notice" class="note" role="status" aria-live="polite" hidden>Review your changes, then click Save to apply them.</span></div>
         <p id="transfer-status" role="status" aria-live="polite"></p>
       </div>
@@ -129,6 +143,7 @@
         <section aria-labelledby="changelog-120">
           <h3 id="changelog-120">Version 1.2.0</h3>
           <ul>
+            <li><strong>[NEW]</strong> Choose which settings sections to export. Import included sections for review while keeping the rest unchanged; older exports still work.</li>
             <li><strong>[NEW]</strong> Choose whether regular search tabs open at the beginning or end of the tab list, or immediately to either side of the source tab.</li>
             <li><strong>[NEW]</strong> Choose separate search windows for every search, reuse by source tab, search link, or source window.</li>
             <li><strong>[NEW]</strong> Open a website’s searches in a new window from either menu, with a shortcut-arrow badge in the quick popup. New window and Incognito are mutually exclusive.</li>

@@ -96,8 +96,15 @@ input[type=text] { width: 100%; display: block; margin-top: 8px; padding: 11px; 
 .transfer summary:focus-visible { outline: 3px solid #f6a45c; outline-offset: 2px; border-radius: 12px; }
 .transfer-content { padding: 0 24px 20px; }
 .transfer-content .note { margin-top: 0; }
+.transfer-content > .note { margin-bottom: 8px; }
 #transfer-text { display: block; width: 100%; resize: vertical; min-height: 100px; margin: 8px 0 16px; padding: 12px; border: 1px solid #dbe2ed; border-radius: 8px; color: #243447; background: white; font: 12px/1.6 ui-monospace, Consolas, monospace; }
 #transfer-text:focus-visible { outline: 3px solid #f6a45c; outline-offset: 2px; }
+.transfer-input-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+#copy-transfer { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; padding: 8px; flex: 0 0 auto; }
+.export-sections { border: 0; padding: 0; min-width: 0; margin: 8px 0 0; }
+.export-sections legend { padding: 0; margin-bottom: 0; font-size: 13px; font-weight: 650; }
+.export-section-choices { display: flex; flex-wrap: wrap; gap: 4px 24px; }
+.export-section-choices label { min-height: 44px; font-size: 13px; cursor: pointer; }
 .transfer-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
 #import-notice { flex: 1 1 220px; margin: 0; }
 #transfer-status { font-size: 13px; margin: 12px 0 0; }
@@ -159,3 +166,13 @@ input[type=text] { width: 100%; display: block; margin-top: 8px; padding: 11px; 
 #reset, #reset-top { color: #bc4c0b; }
 :root:not([data-theme="light"]) #discard, :root:not([data-theme="light"]) #discard-top { color: #ffaaaa; }
 :root:not([data-theme="light"]) #reset, :root:not([data-theme="light"]) #reset-top { color: #f59b54; }
+
+#copy-transfer { color: #ad470b; border-color: #bc4c0b; background: #fff0e3; }
+#copy-transfer:disabled { opacity: .7; }
+#copy-transfer:not(:disabled):hover { background: #ffe0c5; }
+:root:not([data-theme="light"]) #copy-transfer { color: #ffb477; border-color: #b47443; background: #39291e; }
+:root:not([data-theme="light"]) #copy-transfer:not(:disabled):hover { background: #503521; }
+#transfer-status:empty { display: none; }
+
+#transfer-status { --copy-confirmation-color: #ad470b; }
+:root:not([data-theme="light"]) #transfer-status { --copy-confirmation-color: #ffb477; }

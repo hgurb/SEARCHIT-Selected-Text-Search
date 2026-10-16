@@ -31,7 +31,7 @@ Check **Incognito** for a site to open its searches in a private window. Enable 
 
 ## Import and export
 
-Use **Export & copy** to copy your website list. Paste it into another instance and click **Import & review** to review the replacement list. Click **Save** to apply it, or **Discard** to restore your saved list. Global preferences and the settings theme are not included.
+Choose which sections to include, then use **Export & copy**. Only **Search options** is selected by default; Quick popup, New tab behavior, and New window behavior can also be included. **Import & review** loads only the included sections, leaving others unchanged. Click **Save** to apply them or **Discard** to restore your saved settings. Older website-list exports still work. The settings-page theme and Chrome permissions are not transferred.
 
 ## Privacy
 

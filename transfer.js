@@ -1,5 +1,6 @@
 import { validateOption, validateFaviconUrl } from './search.js';
 import { limitPopupLabel } from './popup-label.js';
+import { POPUP_POSITIONS } from './popup-settings.js';
 
 const PREFIX = 'SEARCHIT:v1:';
 
@@ -31,4 +32,47 @@ export function importOptions(text) {
   try { data = JSON.parse(value.slice(PREFIX.length)); }
   catch { throw new Error('The export string is incomplete or invalid. Copy it again and retry.'); }
   return checkOptions(data?.options).map(option => ({ ...option, id: crypto.randomUUID() }));
+}
+
+const SECTION_NAMES = ['quickPopup', 'newTabBehavior', 'newWindowBehavior', 'searchOptions'];
+function checkSections(sections) {
+  if (!sections || typeof sections !== 'object' || Array.isArray(sections)) throw new Error('The export must contain settings sections.');
+  const names = Object.keys(sections);
+  if (!names.length) throw new Error('Select at least one section to export.');
+  if (names.some(name => !SECTION_NAMES.includes(name))) throw new Error('This export contains an unsupported settings section. Update SEARCHIT before importing it.');
+  const result = {};
+  if (Object.hasOwn(sections, 'quickPopup')) {
+    const value = sections.quickPopup;
+    if (!value || typeof value !== 'object' || Array.isArray(value) || typeof value.enabled !== 'boolean' || !['system', 'dark', 'light'].includes(value.theme) || !POPUP_POSITIONS.includes(value.position) || !Number.isSafeInteger(value.iconsPerRow) || value.iconsPerRow < 0) throw new Error('Invalid Quick popup settings.');
+    result.quickPopup = { enabled: value.enabled, theme: value.theme, position: value.position, iconsPerRow: value.iconsPerRow };
+  }
+  if (Object.hasOwn(sections, 'newTabBehavior')) {
+    if (!['end', 'start', 'left', 'right'].includes(sections.newTabBehavior)) throw new Error('Invalid New tab behavior.');
+    result.newTabBehavior = sections.newTabBehavior;
+  }
+  if (Object.hasOwn(sections, 'newWindowBehavior')) {
+    if (!['always-new', 'source-tab', 'search-link', 'shared-window'].includes(sections.newWindowBehavior)) throw new Error('Invalid New window behavior.');
+    result.newWindowBehavior = sections.newWindowBehavior;
+  }
+  if (Object.hasOwn(sections, 'searchOptions')) result.searchOptions = checkOptions(sections.searchOptions);
+  return result;
+}
+
+export function exportSettings(sections) {
+  const checked = checkSections(sections);
+  // Website-only exports retain the original format, including compatibility with older releases.
+  if (Object.keys(checked).length === 1 && Object.hasOwn(checked, 'searchOptions')) return exportOptions(checked.searchOptions);
+  return 'SEARCHIT:v2:' + JSON.stringify({ sections: checked });
+}
+
+export function importSettings(text) {
+  const value = typeof text === 'string' ? text.trim() : '';
+  if (value.startsWith(PREFIX)) return { searchOptions: importOptions(value) };
+  if (!value.startsWith('SEARCHIT:v2:')) throw new Error('Unsupported or incomplete SEARCHIT export. Use an export from a supported version.');
+  let data;
+  try { data = JSON.parse(value.slice('SEARCHIT:v2:'.length)); }
+  catch { throw new Error('The export string is incomplete or invalid. Copy it again and retry.'); }
+  const sections = checkSections(data?.sections);
+  if (sections.searchOptions) sections.searchOptions = sections.searchOptions.map(option => ({ ...option, id: crypto.randomUUID() }));
+  return sections;
 }

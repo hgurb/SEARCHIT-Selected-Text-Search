@@ -1,5 +1,5 @@
 import { readOptions, validateOption, validateFaviconUrl, faviconPageUrl, TOKEN, DEFAULT_OPTIONS, DEFAULT_SEARCH_SETTINGS, readSearchSettings } from './search.js';
-import { exportOptions, importOptions } from './transfer.js';
+import { exportSettings, importSettings } from './transfer.js';
 import { limitPopupLabel } from './popup-label.js';
 import { DEFAULT_POPUP, POPUP_ORIGINS, readPopup } from './popup-settings.js';
 
@@ -114,6 +114,7 @@ function renderSaveNotices() {
   else if (popupStatus.textContent === 'Click Save to apply this choice.') popupStatus.textContent = '';
 }
 function markDirty(section = 'options') {
+  invalidateExport();
   editRevision++;
   dirty = true;
   for (const key of section === 'all' ? ['popup', 'tabs', 'windows', 'options'] : [section]) changedSections.set(key, editRevision);
@@ -246,7 +247,7 @@ document.querySelectorAll('#add, #add-bottom').forEach(button => button.addEvent
   const row = addRow({ id: crypto.randomUUID(), name: '', url: '', enabled: true });
   markDirty(); row.querySelector('.name').focus();
 }));
-document.querySelector('#discard-top').addEventListener('click', () => { editRevision++; render(saved); renderPopup(savedPopup); renderWindowBehavior(savedSearchSettings.windowBehavior); renderTabPlacement(savedSearchSettings.tabPlacement); popupStatus.textContent = ''; changedSections.clear(); if (saving) for (const key of ['popup', 'tabs', 'windows', 'options']) changedSections.set(key, editRevision); renderSaveNotices(); setImportReady(false); importNotice.hidden = true; transferStatus.textContent = ''; dirty = false; status.textContent = 'Changes discarded'; });
+document.querySelector('#discard-top').addEventListener('click', () => { invalidateExport(); editRevision++; render(saved); renderPopup(savedPopup); renderWindowBehavior(savedSearchSettings.windowBehavior); renderTabPlacement(savedSearchSettings.tabPlacement); popupStatus.textContent = ''; changedSections.clear(); if (saving) for (const key of ['popup', 'tabs', 'windows', 'options']) changedSections.set(key, editRevision); renderSaveNotices(); setImportReady(false); importNotice.hidden = true; transferStatus.textContent = ''; dirty = false; status.textContent = 'Changes discarded'; });
 document.querySelector('#reset-top').addEventListener('click', () => {
   render(DEFAULT_OPTIONS.map(option => ({ ...option })));
   renderPopup(DEFAULT_POPUP);
@@ -317,7 +318,7 @@ document.querySelector('#settings').addEventListener('submit', async event => {
     } else {
       popupStatus.textContent = '';
       setImportReady(false);
-      if (!importNotice.hidden) transferStatus.textContent = 'Imported options saved.';
+      if (!importNotice.hidden) transferStatus.textContent = 'Imported settings saved.';
       importNotice.hidden = true;
       status.textContent = 'Saved. Your searches are ready.';
     }
@@ -328,28 +329,100 @@ document.querySelector('#settings').addEventListener('submit', async event => {
 const transferText = document.querySelector('#transfer-text');
 const transferStatus = document.querySelector('#transfer-status');
 const importNotice = document.querySelector('#import-notice');
-transferText.addEventListener('input', () => setImportReady(false));
-document.querySelector('#export').addEventListener('click', async () => {
-  try { transferText.value = exportOptions(collectOptions()); setImportReady(false); }
-  catch (error) { transferStatus.textContent = error.message; return; }
+const exportButton = document.querySelector('#export');
+const copyButton = document.querySelector('#copy-transfer');
+let copying = false;
+let copyFeedback;
+function updateCopyButton() { copyButton.disabled = copying || !transferText.value; }
+copyButton.addEventListener('click', async () => {
+  const text = transferText.value;
+  if (!text) return;
+  copying = true;
+  updateCopyButton();
   try {
-    await navigator.clipboard.writeText(transferText.value);
+    await navigator.clipboard.writeText(text);
+    transferStatus.textContent = 'Copied to clipboard.';
+    copyFeedback?.cancel();
+    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    copyFeedback = transferStatus.animate([
+      { color: 'var(--copy-confirmation-color)', textShadow: reducedMotion ? 'none' : '0 0 8px var(--copy-confirmation-color)' },
+      { color: getComputedStyle(transferStatus).color, textShadow: 'none' }
+    ], { duration: 800, easing: 'ease-out' });
+  } catch {
+    if (transferText.value === text) { transferText.focus(); transferText.select(); }
+    transferStatus.textContent = 'Clipboard access failed. Copy the text manually or try again.';
+  } finally { copying = false; updateCopyButton(); }
+});
+const importButton = document.querySelector('#import');
+const exportBoxes = [...document.querySelectorAll('[data-export-section]')];
+let exportRevision = 0;
+let exportFresh = false;
+let exporting = false;
+function updateExportButton() { exportButton.disabled = exporting || exportFresh || !exportBoxes.some(box => box.checked); }
+function invalidateExport() { exportRevision++; exportFresh = false; updateExportButton(); }
+exportBoxes.forEach(box => box.addEventListener('change', invalidateExport));
+transferText.addEventListener('input', () => { setImportReady(false); invalidateExport(); updateCopyButton(); });
+updateExportButton();
+
+exportButton.addEventListener('click', async () => {
+  const sections = {};
+  let exported;
+  try {
+    for (const box of exportBoxes.filter(box => box.checked)) {
+      if (box.dataset.exportSection === 'searchOptions') sections.searchOptions = collectOptions();
+      if (box.dataset.exportSection === 'quickPopup') sections.quickPopup = collectPopup();
+      if (box.dataset.exportSection === 'newTabBehavior') sections.newTabBehavior = collectTabPlacement();
+      if (box.dataset.exportSection === 'newWindowBehavior') sections.newWindowBehavior = collectWindowBehavior();
+    }
+    exported = exportSettings(sections);
+    transferText.value = exported;
+    updateCopyButton();
+    setImportReady(false);
+  } catch (error) { transferStatus.textContent = error.message; return; }
+  const revision = exportRevision;
+  exporting = true;
+  updateExportButton();
+  try {
+    await navigator.clipboard.writeText(exported);
+    exportFresh = exportRevision === revision && transferText.value === exported;
     transferStatus.textContent = 'Export generated and copied to the clipboard.';
   } catch {
-    transferText.focus(); transferText.select();
-    transferStatus.textContent = 'Export generated. Clipboard access failed; copy the selected string manually.';
-  }
+    exportFresh = false;
+    if (transferText.value === exported) { transferText.focus(); transferText.select(); }
+    transferStatus.textContent = 'Export generated. Clipboard access failed; copy the selected string manually or try Export again.';
+  } finally { exporting = false; updateExportButton(); }
 });
-document.querySelector('#import').addEventListener('click', () => {
+
+importButton.addEventListener('click', async () => {
   setImportReady(false);
-  let options;
-  try { options = importOptions(transferText.value); }
+  const text = transferText.value;
+  const revision = editRevision;
+  let sections;
+  try { sections = importSettings(text); }
   catch (error) { transferStatus.textContent = error.message; return; }
-  render(options);
-  markDirty();
-  setImportReady(true);
-  importNotice.hidden = false;
-  transferStatus.textContent = `Loaded ${options.length} search options for review.`;
+  importButton.disabled = true;
+  try {
+    // Request directly from the import click so Chrome retains the user gesture.
+    if (sections.quickPopup?.enabled && !await chrome.permissions.request({ origins: POPUP_ORIGINS })) {
+      transferStatus.textContent = 'Website access was not granted. Nothing was imported.';
+      return;
+    }
+    if (transferText.value !== text || editRevision !== revision) {
+      transferStatus.textContent = 'Settings or import text changed. Click Import & review again.';
+      return;
+    }
+    const loaded = [];
+    if (sections.quickPopup) { renderPopup(sections.quickPopup); markDirty('popup'); loaded.push('Quick popup'); }
+    if (Object.hasOwn(sections, 'newTabBehavior')) { renderTabPlacement(sections.newTabBehavior); markDirty('tabs'); loaded.push('New tab behavior'); }
+    if (Object.hasOwn(sections, 'newWindowBehavior')) { renderWindowBehavior(sections.newWindowBehavior); markDirty('windows'); loaded.push('New window behavior'); }
+    if (sections.searchOptions) { render(sections.searchOptions); markDirty(); loaded.push('Search options'); }
+    setImportReady(true);
+    importNotice.hidden = false;
+    transferStatus.textContent = loaded.length === 1 && sections.searchOptions
+      ? 'Loaded ' + sections.searchOptions.length + ' search options for review.'
+      : 'Loaded ' + loaded.join(', ') + ' for review.';
+  } catch { transferStatus.textContent = 'Could not request website access. Nothing was imported; try again.'; }
+  finally { importButton.disabled = false; }
 });
 window.addEventListener('beforeunload', event => { if (dirty) { event.preventDefault(); event.returnValue = ''; } });
 try { [saved, savedPopup, savedSearchSettings] = await Promise.all([readOptions(), readPopup(), readSearchSettings()]); render(saved); renderPopup(savedPopup); renderWindowBehavior(savedSearchSettings.windowBehavior); renderTabPlacement(savedSearchSettings.tabPlacement); }
