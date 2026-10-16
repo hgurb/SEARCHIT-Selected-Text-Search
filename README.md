@@ -13,7 +13,7 @@ Search selected text on your favorite websites using the right-click menu or an 
 
 ## Use
 
-Select text, right-click, and choose **Search selected text → [site]**. Open the extension settings to add, edit, reorder, or remove websites, then click **Save changes**. IMDb, Reddit, and YouTube are included by default.
+Select text, right-click, and choose **Search selected text → [site]**. Open the extension settings to add, edit, reorder, or remove websites, then click **Save**. IMDb, Reddit, and YouTube are included by default.
 
 To add a website, copy its search results URL and replace the search term with `#SEARCHIT#` (case-insensitive):
 
@@ -31,7 +31,7 @@ Check **Incognito** for a site to open its searches in a private window. Enable 
 
 ## Import and export
 
-Use **Export & copy** to copy your website list. Paste it into another instance and click **Import & review** to review the replacement list. Click **Save changes** to apply it, or **Discard changes** to restore your saved list. Global preferences and the settings theme are not included.
+Use **Export & copy** to copy your website list. Paste it into another instance and click **Import & review** to review the replacement list. Click **Save** to apply it, or **Discard** to restore your saved list. Global preferences and the settings theme are not included.
 
 ## Privacy
 

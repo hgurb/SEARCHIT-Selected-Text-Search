@@ -90,7 +90,7 @@ popupButton.addEventListener('click', async () => {
       if (!granted) { popupStatus.textContent = 'Website access was not granted. The right-click menu still works.'; return; }
     }
     renderPopup({ ...collectPopup(), enabled: !popupEnabled });
-    popupStatus.textContent = 'Save changes to apply this choice.';
+    popupStatus.textContent = 'Click Save to apply this choice.';
     markDirty('popup');
   } catch { popupStatus.textContent = 'Could not change website access. Try again.'; }
   finally { popupButton.disabled = false; }
@@ -110,8 +110,8 @@ function renderSaveNotices() {
   document.querySelector('#tab-save-notice').hidden = !changedSections.has('tabs');
   document.querySelector('#window-save-notice').hidden = !changedSections.has('windows');
   document.querySelector('#options-save-notice').hidden = !changedSections.has('options');
-  if (changedSections.has('popup')) popupStatus.textContent = 'Save changes to apply this choice.';
-  else if (popupStatus.textContent === 'Save changes to apply this choice.') popupStatus.textContent = '';
+  if (changedSections.has('popup')) popupStatus.textContent = 'Click Save to apply this choice.';
+  else if (popupStatus.textContent === 'Click Save to apply this choice.') popupStatus.textContent = '';
 }
 function markDirty(section = 'options') {
   editRevision++;

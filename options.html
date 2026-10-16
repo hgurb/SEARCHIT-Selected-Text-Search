@@ -32,15 +32,15 @@
       <div class="settings-toolbar">
         <h2>Settings</h2>
         <span id="status-top" role="status" aria-live="polite"></span>
-        <button id="reset-top" type="button">Reset to defaults</button>
-        <button id="discard-top" type="button">Discard changes</button>
-        <button id="save-top" class="primary" type="submit" form="settings">Save changes</button>
+        <button id="reset-top" type="button">Reset defaults</button>
+        <button id="discard-top" type="button">Discard</button>
+        <button id="save-top" class="primary" type="submit" form="settings">Save</button>
       </div>
     <form id="settings" novalidate>
       <details class="popup-settings settings-section settings-card">
         <summary id="popup-heading"><span class="settings-summary-line"><span>Quick popup<span class="settings-scope">Shows search icons beside selected text on webpages</span></span><span id="popup-current" class="settings-current">Off</span></span></summary>
         <div class="settings-section-content">
-        <p class="note">Show clickable site icons beside selected text. Enabling this feature requests access to ordinary webpages. Save changes to apply your choices.</p>
+        <p class="note">Show clickable site icons beside selected text. Enabling this feature requests access to ordinary webpages. Click Save to apply your choices.</p>
         <div class="popup-controls">
           <button id="popup-enabled" type="button" role="switch" aria-checked="false">Quick popup: Off</button>
           <label for="popup-theme">Popup appearance<select id="popup-theme"><option value="dark">Dark mode</option><option value="light">Light mode</option></select></label>
@@ -73,7 +73,7 @@
             </div>
           </fieldset>
           <p id="tab-placement-help" class="note">Applies to regular searches from the right-click menu and quick popup. New window and Incognito searches keep their own behavior.</p>
-          <p id="tab-save-notice" class="note" role="status" aria-live="polite" hidden>Save changes to apply this choice.</p>
+          <p id="tab-save-notice" class="note" role="status" aria-live="polite" hidden>Click Save to apply this choice.</p>
         </div>
       </details>
       <details class="search-window-settings settings-section settings-card">
@@ -99,7 +99,7 @@
           </div>
         </fieldset>
         <p id="window-behavior-help" class="note">Applies only to sites with New window selected. Reused windows open each search in a new tab. If a window is closed, the next search creates a replacement.</p>
-        <p id="window-save-notice" class="note" role="status" aria-live="polite" hidden>Save changes to apply this choice.</p>
+        <p id="window-save-notice" class="note" role="status" aria-live="polite" hidden>Click Save to apply this choice.</p>
         </div>
       </details>
       <section class="settings-card search-options" aria-labelledby="search-options-heading">
@@ -110,13 +110,13 @@
       <p class="note">Site icons come from Chrome’s favicon service and may appear after you visit the website. Chrome uses one extension icon for the right-click submenu.</p>
       <p class="note">Choose New window for regular search windows, or Incognito for private searches. Choose a window behavior above to group searches by source tab, search link, or source window. Only one can be selected per website. Enable “Allow in Incognito” in Chrome's extension settings to reuse existing incognito windows.</p>
       <p class="note">Enabled controls both menus. Quick popup controls whether an enabled site also appears in the icon bar.</p>
-      <p id="options-save-notice" class="note" role="status" aria-live="polite" hidden>Save changes to apply your search options.</p>
+      <p id="options-save-notice" class="note" role="status" aria-live="polite" hidden>Click Save to apply your search options.</p>
       </section>
     </form>
     <details class="transfer">
       <summary>Import &amp; export</summary>
       <div class="transfer-content">
-        <p class="note">Export your current search options to move them to another SEARCHIT instance. Import loads a replacement website list into the editor for review. Save changes to apply it, or Discard changes to keep your saved list.</p>
+        <p class="note">Export your current search options to move them to another SEARCHIT instance. Import loads a replacement website list into the editor for review. Click Save to apply it, or click Discard to keep your saved list.</p>
         <label for="transfer-text">Export / import string</label>
         <textarea id="transfer-text" rows="5" spellcheck="false" placeholder="Click Export or paste a SEARCHIT export string here."></textarea>
         <div class="transfer-actions"><button id="export" type="button">Export &amp; copy</button><button id="import" class="primary" type="button">Import &amp; review</button><button id="import-save" class="primary" type="submit" form="settings" disabled>Save</button><span id="import-notice" class="note" role="status" aria-live="polite" hidden>Review your changes, then click Save to apply them.</span></div>
@@ -137,7 +137,7 @@
             <li>Changes made while saving remain marked as unsaved until saved again.</li>
             <li>Settings and quick popup themes follow the system by default and remember manual light or dark choices.</li>
             <li>Quick popup and Search windows settings are collapsible. Save, Discard, and Reset stay visible while scrolling.</li>
-            <li>Imports now load into settings for review before saving. Use Discard changes to restore your saved options.</li>
+            <li>Imports now load into settings for review before saving. Use Discard to restore your saved options.</li>
           </ul>
         </section>
         <section aria-labelledby="changelog-111">
