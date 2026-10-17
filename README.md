@@ -37,4 +37,4 @@ Choose which sections to include, then use **Export & copy**. Only **Search opti
 
 Settings are stored locally. No analytics or tracking. Selected text is sent to the chosen website only when you launch a search. See [PRIVACY.md](PRIVACY.md).
 
-Version **1.2.0**. Licensed under [MIT](LICENSE).
+Version **1.2.1**. Licensed under [MIT](LICENSE).
