@@ -70,6 +70,7 @@ function renderPopupTheme() {
 systemTheme.addEventListener('change', () => { if (popupThemePreference === 'system') renderPopupTheme(); });
 const popupPosition = document.querySelector('#popup-position');
 const popupColumns = document.querySelector('#popup-columns');
+const popupShowMore = document.querySelector('#popup-show-more');
 const popupStatus = document.querySelector('#popup-status');
 function renderPopup(settings) {
   popupEnabled = settings.enabled;
@@ -79,9 +80,10 @@ function renderPopup(settings) {
   renderPopupTheme();
   popupPosition.value = settings.position;
   popupColumns.value = settings.iconsPerRow ?? 8;
+  popupShowMore.checked = settings.showMore === true;
   document.querySelector('#popup-current').textContent = popupEnabled ? 'On' : 'Off';
 }
-function collectPopup() { return { enabled: popupEnabled, theme: popupThemePreference, position: popupPosition.value, iconsPerRow: Number(popupColumns.value) }; }
+function collectPopup() { return { enabled: popupEnabled, theme: popupThemePreference, position: popupPosition.value, iconsPerRow: Number(popupColumns.value), showMore: popupShowMore.checked }; }
 popupButton.addEventListener('click', async () => {
   popupButton.disabled = true;
   try {
@@ -98,6 +100,7 @@ popupButton.addEventListener('click', async () => {
 popupTheme.addEventListener('change', () => { popupThemePreference = popupTheme.value; markDirty('popup'); });
 popupPosition.addEventListener('change', () => markDirty('popup'));
 popupColumns.addEventListener('input', () => markDirty('popup'));
+popupShowMore.addEventListener('change', () => markDirty('popup'));
 chrome.permissions.onRemoved.addListener(async () => {
   if (!await chrome.permissions.contains({ origins: POPUP_ORIGINS })) {
     renderPopup({ ...collectPopup(), enabled: false });
@@ -292,7 +295,7 @@ document.querySelector('#settings').addEventListener('submit', async event => {
   if (saving || (event.submitter === importSave && !importReady)) return;
   if (!popupColumns.checkValidity() || !Number.isSafeInteger(Number(popupColumns.value))) {
     document.querySelector('.popup-settings').open = true;
-    status.textContent = 'Icons per row must be a whole number of at least 0.';
+    status.textContent = 'Maximum icons per row must be a whole number of at least 0.';
     popupColumns.focus();
     popupColumns.reportValidity();
     return;

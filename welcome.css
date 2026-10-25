@@ -1,0 +1,45 @@
+.welcome { max-width: 860px; margin: 36px auto; }
+.welcome .header-bar { margin-bottom: 28px; }
+.welcome-card { padding: 40px 48px 30px; border: 1px solid #e0e6ef; border-radius: 16px; background: white; }
+.welcome-eyebrow { margin: 0 0 12px; color: #ad470b; font-size: 12px; font-weight: 750; letter-spacing: 1.2px; text-transform: uppercase; }
+.welcome h1 { margin: 0; font-size: clamp(30px, 4.8vw, 46px); line-height: 1.12; letter-spacing: -1.5px; }
+.welcome-intro { max-width: 530px; margin: 18px 0 0; color: #536174; font-size: 16px; line-height: 1.65; }
+.welcome-demo { position: relative; display: flex; flex-direction: column; align-items: center; padding: 28px 16px 18px; margin: 26px 0; border: 1px solid #eed1b8; border-radius: 12px; background: #fff6ee; }
+.welcome-demo p { margin: 0 0 8px; font-size: clamp(15px, 2.5vw, 20px); line-height: 1.6; }
+.welcome-demo mark { background: #f8c998; color: #482a16; padding: 3px 1px; }
+.demo-popup { display: flex; align-items: center; gap: 2px; padding: 3px; border: 1px solid #e3e3e3; border-radius: 6px; background: white; box-shadow: 0 6px 18px #24344718; }
+.demo-popup > span { display: grid; place-items: center; width: 28px; height: 28px; }
+.demo-popup img { display: block; width: 20px; height: 20px; object-fit: contain; }
+.demo-popup .demo-expand { position: relative; width: 18px; height: 26px; margin-left: 2px; border: 1px solid transparent; border-radius: 3px; background: transparent; color: #475569; }
+.demo-expand::after { content: ""; position: absolute; left: -3px; top: 1px; bottom: 1px; width: 1px; background: linear-gradient(to bottom, transparent, #aab5c380 20%, #aab5c380 80%, transparent); pointer-events: none; }
+:root:not([data-theme="light"]) .demo-expand::after { background: linear-gradient(to bottom, transparent, #a18e7e80 20%, #a18e7e80 80%, transparent); }
+.demo-expand svg { display: block; }
+.demo-popup .demo-expand:hover { border-color: #bc4c0b; background: #fff0e3; color: #ad470b; }
+:root:not([data-theme="light"]) .demo-popup .demo-expand { background: transparent; color: #eee8e2; }
+:root:not([data-theme="light"]) .demo-popup .demo-expand:hover { border-color: #f59b54; background: #403329; color: #ffb477; }
+.demo-caption { margin-top: 16px; color: #6d6259; font-size: 12px; }
+.welcome-permission { display: flex; align-items: flex-start; gap: 12px; margin: 26px 0 0; }
+.welcome-permission svg { flex-shrink: 0; margin-top: 1px; color: #ad470b; }
+.welcome-permission strong { font-size: 14px; }
+.welcome-permission p { margin: 5px 0 0; color: #536174; font-size: 13px; line-height: 1.65; }
+.welcome-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 14px; }
+.welcome-actions button { min-height: 54px; padding: 14px 24px; font-size: 16px; font-weight: 700; }
+.welcome-actions #enable-popup { min-width: 230px; box-shadow: 0 4px 14px #bc4c0b24; }
+.welcome-actions #skip-welcome { min-width: 150px; background: #e7edf5; border-color: #8393a8; color: #243447; }
+.welcome-actions #skip-welcome:hover { background: #d6e0ed; }
+:root:not([data-theme="light"]) .welcome-actions #skip-welcome { background: #453a32; border-color: #a18b79; color: #fff4e9; }
+:root:not([data-theme="light"]) .welcome-actions #skip-welcome:hover { background: #58483b; }
+#welcome-status { text-align: center; font-size: 13px; line-height: 1.6; margin: 14px 0 0; }
+#welcome-status:empty { display: none; }
+.welcome-footnote { text-align: center; margin: 20px 0 0; color: #536174; font-size: 12px; line-height: 1.7; }
+.welcome-footnote a { color: inherit; text-underline-offset: 3px; }
+:root:not([data-theme="light"]) .welcome-card { background: #211d1a; border-color: #463b33; }
+:root:not([data-theme="light"]) .welcome-eyebrow, :root:not([data-theme="light"]) .welcome-permission svg { color: #ffb477; }
+:root:not([data-theme="light"]) .welcome-intro, :root:not([data-theme="light"]) .welcome-permission p, :root:not([data-theme="light"]) .welcome-footnote { color: #bdc9dc; }
+:root:not([data-theme="light"]) .welcome-demo { background: #2c211a; border-color: #62402a; }
+:root:not([data-theme="light"]) .welcome-demo mark { background: #8c4b24; color: #fff4e9; }
+:root:not([data-theme="light"]) .demo-popup { background: #211d1a; border-color: #625043; box-shadow: 0 6px 18px #0003; }
+:root:not([data-theme="light"]) .demo-caption { color: #bdc9dc; }
+@media (max-width: 560px) { .welcome { margin: 24px auto; }.welcome-card { padding: 28px 20px 24px; }.welcome-demo { padding-inline: 8px; }.welcome h1 { letter-spacing: -.8px; } }
+
+@media (max-width: 560px) { .welcome-actions { gap: 10px; }.welcome-actions button { width: 100%; }.welcome-actions #enable-popup, .welcome-actions #skip-welcome { min-width: 0; } }

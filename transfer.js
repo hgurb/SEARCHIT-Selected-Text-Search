@@ -44,7 +44,8 @@ function checkSections(sections) {
   if (Object.hasOwn(sections, 'quickPopup')) {
     const value = sections.quickPopup;
     if (!value || typeof value !== 'object' || Array.isArray(value) || typeof value.enabled !== 'boolean' || !['system', 'dark', 'light'].includes(value.theme) || !POPUP_POSITIONS.includes(value.position) || !Number.isSafeInteger(value.iconsPerRow) || value.iconsPerRow < 0) throw new Error('Invalid Quick popup settings.');
-    result.quickPopup = { enabled: value.enabled, theme: value.theme, position: value.position, iconsPerRow: value.iconsPerRow };
+    if (value.showMore !== undefined && typeof value.showMore !== 'boolean') throw new Error('Invalid Quick popup expansion setting.');
+    result.quickPopup = { enabled: value.enabled, theme: value.theme, position: value.position, iconsPerRow: value.iconsPerRow, showMore: value.showMore !== false };
   }
   if (Object.hasOwn(sections, 'newTabBehavior')) {
     if (!['end', 'start', 'left', 'right'].includes(sections.newTabBehavior)) throw new Error('Invalid New tab behavior.');

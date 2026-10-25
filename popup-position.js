@@ -17,3 +17,13 @@ globalThis.searchitPosition = function (rect, width, height, position, viewportW
   // Keep every icon reachable when the selected position is near a screen edge.
   return { x: Math.max(gap, Math.min(x, viewportWidth - width - gap)), y: Math.max(gap, Math.min(y, viewportHeight - height - gap)) };
 };
+
+globalThis.searchitRows = function (count, limit, available) {
+  if (!count) return [];
+  if (limit === 0) return [count];
+  const maximum = Math.max(1, Math.min(limit, available));
+  const rows = Math.ceil(count / maximum);
+  const perRow = Math.floor(count / rows);
+  const extra = count % rows;
+  return Array.from({ length: rows }, (_, index) => perRow + (index < extra ? 1 : 0));
+};

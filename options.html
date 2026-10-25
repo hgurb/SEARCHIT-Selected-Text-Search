@@ -45,8 +45,10 @@
           <button id="popup-enabled" type="button" role="switch" aria-checked="false">Quick popup: Off</button>
           <label for="popup-theme">Popup appearance<select id="popup-theme"><option value="dark">Dark mode</option><option value="light">Light mode</option></select></label>
           <label for="popup-position">Popup position<select id="popup-position"><option value="bottom-right">Bottom left</option><option value="bottom-left">Bottom right</option><option value="bottom-center">Bottom center</option><option value="right">Right</option><option value="left">Left</option><option value="top-right">Top left</option><option value="top-left">Top right</option><option value="top-center">Top center</option><option value="top-left-corner">Top left corner</option><option value="top-right-corner">Top right corner</option><option value="bottom-left-corner">Bottom left corner</option><option value="bottom-right-corner">Bottom right corner</option></select></label>
-          <label for="popup-columns">Icons per row <span class="hint">(0 = unlimited)</span><input id="popup-columns" type="number" min="0" step="1" value="8" required></label>
+          <label for="popup-columns">Maximum icons per row <span class="hint">(0 = unlimited)</span><input id="popup-columns" type="number" min="0" step="1" value="8" required></label>
         </div>
+        <label class="toggle popup-more-toggle" for="popup-show-more"><input id="popup-show-more" type="checkbox" checked aria-describedby="popup-show-more-help"> Show a » button for more search options</label>
+        <p id="popup-show-more-help" class="note">Click » to append the other enabled sites. Each new popup starts with your chosen quick-popup sites.</p>
         <p id="popup-status" class="note" role="status" aria-live="polite"></p>
         </div>
       </details>
@@ -140,43 +142,52 @@
     <details id="changelog" class="transfer changelog">
       <summary>Changelog</summary>
       <div class="transfer-content changelog-content">
+        <section aria-labelledby="changelog-130">
+          <h3 id="changelog-130">Version 1.3.0</h3>
+          <ul>
+            <li><strong>[NEW]</strong> Enable the quick popup from a one-time welcome page.</li>
+            <li><strong>[NEW]</strong> Expand the quick popup with » to show other enabled sites after your chosen icons.</li>
+            <li><strong>[NEW]</strong> Open settings from the expanded quick popup.</li>
+            <li>Popup icons wrap into balanced rows within your chosen limit.</li>
+          </ul>
+        </section>
         <section aria-labelledby="changelog-121">
           <h3 id="changelog-121">Version 1.2.1</h3>
           <ul>
-            <li><strong>[NEW]</strong> Choose which settings sections to export. Import included sections for review while keeping the rest unchanged; older exports still work.</li>
-            <li><strong>[NEW]</strong> Copy the current export or import string again using a dedicated clipboard button.</li>
-            <li>Improved import and export spacing, label readability, and copy confirmation feedback.</li>
+            <li><strong>[NEW]</strong> Export selected settings sections and import them without changing the rest. Older exports still work.</li>
+            <li><strong>[NEW]</strong> Copy the export or import text again with a clipboard button.</li>
+            <li>Improved import/export layout, labels, and copy feedback.</li>
           </ul>
         </section>
         <section aria-labelledby="changelog-120">
           <h3 id="changelog-120">Version 1.2.0</h3>
           <ul>
-            <li><strong>[NEW]</strong> Choose whether regular search tabs open at the beginning or end of the tab list, or immediately to either side of the source tab.</li>
-            <li><strong>[NEW]</strong> Choose separate search windows for every search, reuse by source tab, search link, or source window.</li>
-            <li><strong>[NEW]</strong> Open a website’s searches in a new window from either menu, with a shortcut-arrow badge in the quick popup. New window and Incognito are mutually exclusive.</li>
-            <li><strong>[NEW]</strong> Choose a different website’s favicon for each search option, with a preview in settings and support for import and export.</li>
-            <li><strong>[NEW]</strong> Added a collapsible <strong>Changelog</strong> at the bottom of settings to show what is new in each version.</li>
-            <li>Changes made while saving remain marked as unsaved until saved again.</li>
-            <li>Settings and quick popup themes follow the system by default and remember manual light or dark choices.</li>
-            <li>Quick popup and Search windows settings are collapsible. Save, Discard, and Reset stay visible while scrolling.</li>
-            <li>Imports now load into settings for review before saving. Use Discard to restore your saved options.</li>
+            <li><strong>[NEW]</strong> Open search tabs first, last, or beside the source tab.</li>
+            <li><strong>[NEW]</strong> Open separate search windows or reuse them by source tab, search link, or source window.</li>
+            <li><strong>[NEW]</strong> Open searches in new windows from either menu, with a popup badge. Choose New window or Incognito.</li>
+            <li><strong>[NEW]</strong> Choose custom website icons, with previews and import/export support.</li>
+            <li><strong>[NEW]</strong> Added a collapsible <strong>Changelog</strong> in settings.</li>
+            <li>Edits made during saving stay marked as unsaved.</li>
+            <li>Themes default to the system theme and remember manual choices.</li>
+            <li>Collapsible popup and window settings; Save, Discard, and Reset stay visible while scrolling.</li>
+            <li>Review imports before saving, or discard them to restore saved settings.</li>
           </ul>
         </section>
         <section aria-labelledby="changelog-111">
           <h3 id="changelog-111">Version 1.1.1</h3>
           <ul>
-            <li><strong>[NEW]</strong> Added an <strong>Add new</strong> button below the website list.</li>
+            <li><strong>[NEW]</strong> Added <strong>Add new</strong> below the website list.</li>
             <li>Renamed the extension to <strong>SEARCHIT Selected Text Search</strong>.</li>
             <li>Improved quick popup reliability.</li>
-            <li>Fixed an issue that could cause duplicate search-menu errors when reloading the extension.</li>
+            <li>Fixed duplicate search-menu errors after reloading.</li>
           </ul>
         </section>
         <section aria-labelledby="changelog-110">
           <h3 id="changelog-110">Version 1.1.0</h3>
           <ul>
-            <li><strong>[NEW]</strong> Added an optional <strong>quick popup</strong> with clickable website icons beside selected text.</li>
-            <li><strong>[NEW]</strong> Added <strong>Reset to defaults</strong> and placed Save, Discard, and Reset buttons at both the top and bottom of settings.</li>
-            <li>Updated import and export to include per-site popup settings and labels.</li>
+            <li><strong>[NEW]</strong> Added an optional <strong>quick popup</strong> beside selected text.</li>
+            <li><strong>[NEW]</strong> Added <strong>Reset to defaults</strong> and settings buttons at the top and bottom.</li>
+            <li>Import/export now includes per-site popup settings and labels.</li>
           </ul>
         </section>
       </div>

@@ -19,7 +19,7 @@ To add a website, copy its search results URL and replace the search term with `
 
 `https://www.imdb.com/find/?q=#SEARCHIT#`
 
-Enable **Quick popup** and grant website access to show clickable site icons beside selected text. Customize its theme, position, icons per row, and per-site labels. Set icons per row to `0` for unlimited.
+A one-time welcome page introduces Quick popup after installation or an update if it is off. Choose **Enable quick popup** to grant website access and turn it on, or **Not now** to keep your current choice. Existing enabled popups stay enabled. You can also enable **Quick popup** in settings and grant website access to show clickable site icons beside selected text. Customize its theme, position, icons per row, and per-site labels. Maximum icons per row is a limit: icons balance evenly across the fewest rows that fit the limit and screen width. Set it to `0` for an unlimited single row. **Show a » button for more search options** is on by default, including for existing installations, and reveals other enabled sites on demand. You can turn it off in settings. Your quick-popup sites stay first, followed by the remaining sites in their saved order. Each new popup starts collapsed. A settings cog at the end of the expanded popup opens settings and counts as one icon toward the row limit. This preference is included when exporting Quick popup settings.
 
 Choose **Use a different icon** beneath a search link to use another website’s icon. Custom favicon sources are included in import and export.
 
@@ -37,4 +37,4 @@ Choose which sections to include, then use **Export & copy**. Only **Search opti
 
 Settings are stored locally. No analytics or tracking. Selected text is sent to the chosen website only when you launch a search. See [PRIVACY.md](PRIVACY.md).
 
-Version **1.2.1**. Licensed under [MIT](LICENSE).
+Version **1.3.0**. Licensed under [MIT](LICENSE).

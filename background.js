@@ -56,16 +56,22 @@ const refreshPopup = () => syncPopup().catch(error => console.error('Could not u
 chrome.permissions.onRemoved.addListener(refreshPopup);
 chrome.permissions.onAdded.addListener(refreshPopup);
 chrome.runtime.onMessage.addListener((message, sender, respond) => {
-  if (!['quick-popup-config', 'quick-search'].includes(message?.type)) return;
+  if (!['quick-popup-config', 'quick-search', 'quick-popup-settings'].includes(message?.type)) return;
   if (sender.id !== chrome.runtime.id || !sender.tab || !/^https?:\/\//i.test(sender.url ?? '')) return;
   (async () => {
     const settings = await readPopup();
     const allowed = settings.enabled && await chrome.permissions.contains({ origins: POPUP_ORIGINS });
-    const options = (await readOptions()).filter(option => option.enabled !== false && option.quickPopup !== false && !validateOption(option));
+    if (message.type === 'quick-popup-settings') {
+      if (!allowed || !settings.showMore) throw new Error('Settings shortcut unavailable.');
+      await chrome.runtime.openOptionsPage();
+      respond({ ok: true });
+      return;
+    }
+    const options = (await readOptions()).filter(option => option.enabled !== false && (settings.showMore || option.quickPopup !== false) && !validateOption(option));
     if (message.type === 'quick-popup-config') {
       respond({ settings: { ...settings, enabled: Boolean(allowed) }, options: await Promise.all(options.map(async option => {
         const icon = allowed ? await popupIcon(option) : '';
-        return { id: option.id, name: option.name, incognito: option.incognito === true, newWindow: option.newWindow === true && option.incognito !== true, popupLabel: limitPopupLabel(option.popupLabel), icon };
+        return { id: option.id, name: option.name, quickPopup: option.quickPopup !== false, incognito: option.incognito === true, newWindow: option.newWindow === true && option.incognito !== true, popupLabel: limitPopupLabel(option.popupLabel), icon };
       })) });
     } else {
       const option = options.find(item => item.id === message.id);
@@ -73,7 +79,7 @@ chrome.runtime.onMessage.addListener((message, sender, respond) => {
       await openSearch(option, message.text, sender.tab);
       respond({ ok: true });
     }
-  })().catch(() => respond({ ok: false, error: 'Could not open search.' }));
+  })().catch(() => respond({ ok: false, error: message.type === 'quick-popup-settings' ? 'Could not open settings.' : 'Could not open search.' }));
   return true;
 });
 
@@ -232,6 +238,18 @@ export async function openSearch(option, text, sourceTab) {
   }
   await chrome.windows.create({ url, incognito, focused: true });
 }
+
+export async function showPopupWelcome(details) {
+  if (!['install', 'update'].includes(details?.reason)) return;
+  const { quickPopupWelcomeSeen } = await chrome.storage.local.get('quickPopupWelcomeSeen');
+  if (quickPopupWelcomeSeen) return;
+  const popup = await readPopup();
+  if (!popup.enabled) await chrome.tabs.create({ url: chrome.runtime.getURL('welcome.html') });
+  await chrome.storage.local.set({ quickPopupWelcomeSeen: true });
+}
+chrome.runtime.onInstalled.addListener(details => {
+  showPopupWelcome(details).catch(error => console.error('Could not open welcome page:', error));
+});
 
 chrome.runtime.onInstalled.addListener(refresh);
 chrome.runtime.onStartup.addListener(refresh);

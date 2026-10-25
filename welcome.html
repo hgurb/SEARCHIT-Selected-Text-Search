@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Welcome to SEARCHIT</title>
+  <script src="theme.js"></script>
+  <link rel="stylesheet" href="options.css">
+  <link rel="stylesheet" href="welcome.css">
+  <script src="welcome.js" type="module"></script>
+</head>
+<body>
+  <main class="welcome">
+    <header class="header-bar">
+      <div class="brand"><img src="icons/icon48.png" alt="" width="40" height="40"><span class="brand-name">SEARCHIT</span></div>
+      <button id="theme-toggle" type="button" aria-label="Switch to light mode" title="Switch to light mode">
+          <svg class="theme-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"/></svg>
+          <svg class="theme-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 14A9 9 0 0 1 10 3.2 9 9 0 1 0 20.8 14Z"/></svg>
+        </button>
+    </header>
+    <section class="welcome-card">
+      <p class="welcome-eyebrow">A quicker way to search</p>
+      <h1>Your next search is<br>one click away.</h1>
+      <p class="welcome-intro">Select text on a webpage, then choose a website from a small row of search icons.</p>
+      <div class="welcome-demo" aria-hidden="true">
+        <p>A little <mark>curiosity goes a long way</mark>.</p>
+        <div class="demo-popup">
+          <span><img src="icons/welcome-youtube.png" width="20" height="20" alt=""></span>
+          <span><img src="icons/welcome-imdb.png" width="20" height="20" alt=""></span>
+          <span><img src="icons/welcome-reddit.png" width="20" height="20" alt=""></span>
+          <span class="demo-expand"><svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="m3 4 4 4-4 4m6-8 4 4-4 4"/></svg></span>
+        </div>
+        <span class="demo-caption">Select. Choose. Search.</span>
+      </div>
+      <div class="welcome-actions"><button id="enable-popup" class="primary" type="button" disabled>Enable quick popup</button><button id="skip-welcome" type="button">Not now</button></div>
+      <p id="welcome-status" role="status" aria-live="polite"></p>
+      <div class="welcome-permission">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 8 3v6c0 5-8 9-8 9S4 17 4 12V6z"/><path d="m8 12 3 3 5-6"/></svg>
+        <div><strong>You choose the access.</strong><p>Chrome will ask for website access to show the popup beside your selection. Selected text stays on your device until you launch a search.</p></div>
+      </div>
+      <p class="welcome-footnote">The right-click menu works either way. You can change this anytime in <a href="options.html">Settings</a>.</p>
+    </section>
+  </main>
+</body>
+</html>
