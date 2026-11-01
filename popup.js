@@ -154,23 +154,31 @@
         badge.append(arrow);
         button.append(badge);
       }
-      button.addEventListener('click', async () => {
+      const launchSearch = async event => {
+        const mouseButton = event.type === 'contextmenu' ? 2 : 0;
+        if (mouseButton === 2) event.preventDefault();
         const text = selectedText;
         if (!text || button.disabled) return;
         button.disabled = true;
         try {
-          const result = await chrome.runtime.sendMessage({ type: 'quick-search', id: option.id, text });
+          const result = await chrome.runtime.sendMessage({ type: 'quick-search', id: option.id, text, button: mouseButton });
           if (!result?.ok) throw new Error(result?.error || 'Could not open search.');
-          dismissedText = text;
-          clearTimeout(timer);
-          hide();
+          if (!result.background) {
+            dismissedText = text;
+            clearTimeout(timer);
+            hide();
+          } else {
+            sites.querySelector('.error')?.remove();
+          }
         } catch {
           let error = bar.querySelector('.error');
           if (!error) { error = document.createElement('p'); error.className = 'error'; error.setAttribute('role', 'alert'); sites.append(error); }
           error.textContent = 'Could not open search. Check the site’s window setting and try again.';
           position();
         } finally { button.disabled = false; }
-      });
+      };
+      button.addEventListener('click', launchSearch);
+      button.addEventListener('contextmenu', launchSearch);
       sites.append(button);
     }
     if (!expanded && remaining.length) {

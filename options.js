@@ -71,6 +71,13 @@ systemTheme.addEventListener('change', () => { if (popupThemePreference === 'sys
 const popupPosition = document.querySelector('#popup-position');
 const popupColumns = document.querySelector('#popup-columns');
 const popupShowMore = document.querySelector('#popup-show-more');
+const popupSwapButtons = document.querySelector('#popup-swap-buttons');
+const popupClickHelp = document.querySelector('#popup-click-help');
+function renderPopupClickHelp() {
+  popupClickHelp.textContent = popupSwapButtons.checked
+    ? 'Left-click opens searches in the background. Right-click opens and switches to them.'
+    : 'Left-click opens and switches to searches. Right-click opens them in the background.';
+}
 const popupStatus = document.querySelector('#popup-status');
 function renderPopup(settings) {
   popupEnabled = settings.enabled;
@@ -81,9 +88,11 @@ function renderPopup(settings) {
   popupPosition.value = settings.position;
   popupColumns.value = settings.iconsPerRow ?? 8;
   popupShowMore.checked = settings.showMore === true;
+  popupSwapButtons.checked = settings.swapButtons === true;
+  renderPopupClickHelp();
   document.querySelector('#popup-current').textContent = popupEnabled ? 'On' : 'Off';
 }
-function collectPopup() { return { enabled: popupEnabled, theme: popupThemePreference, position: popupPosition.value, iconsPerRow: Number(popupColumns.value), showMore: popupShowMore.checked }; }
+function collectPopup() { return { enabled: popupEnabled, theme: popupThemePreference, position: popupPosition.value, iconsPerRow: Number(popupColumns.value), showMore: popupShowMore.checked, swapButtons: popupSwapButtons.checked }; }
 popupButton.addEventListener('click', async () => {
   popupButton.disabled = true;
   try {
@@ -101,6 +110,7 @@ popupTheme.addEventListener('change', () => { popupThemePreference = popupTheme.
 popupPosition.addEventListener('change', () => markDirty('popup'));
 popupColumns.addEventListener('input', () => markDirty('popup'));
 popupShowMore.addEventListener('change', () => markDirty('popup'));
+popupSwapButtons.addEventListener('change', () => { renderPopupClickHelp(); markDirty('popup'); });
 chrome.permissions.onRemoved.addListener(async () => {
   if (!await chrome.permissions.contains({ origins: POPUP_ORIGINS })) {
     renderPopup({ ...collectPopup(), enabled: false });

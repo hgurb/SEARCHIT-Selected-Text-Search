@@ -76,8 +76,10 @@ chrome.runtime.onMessage.addListener((message, sender, respond) => {
     } else {
       const option = options.find(item => item.id === message.id);
       if (!allowed || !option || typeof message.text !== 'string' || !message.text.trim()) throw new Error('Search unavailable.');
-      await openSearch(option, message.text, sender.tab);
-      respond({ ok: true });
+      if (message.button !== undefined && ![0, 2].includes(message.button)) throw new Error('Unsupported search action.');
+      const background = settings.swapButtons ? message.button !== 2 : message.button === 2;
+      await openSearch(option, message.text, sender.tab, background);
+      respond({ ok: true, background });
     }
   })().catch(() => respond({ ok: false, error: message.type === 'quick-popup-settings' ? 'Could not open settings.' : 'Could not open search.' }));
   return true;
@@ -130,7 +132,7 @@ async function searchLinkWindowKey(template) {
   return 'searchit-link-window-' + Array.from(new Uint8Array(hash), byte => byte.toString(16).padStart(2, '0')).join('');
 }
 
-async function reuseSearchWindow(url, key, sourceTab, sourceWindowId) {
+async function reuseSearchWindow(url, key, sourceTab, sourceWindowId, background = false) {
   const previous = searchWindowQueues.get(key) ?? Promise.resolve();
   const pending = (async () => {
     await previous.catch(() => {});
@@ -144,16 +146,16 @@ async function reuseSearchWindow(url, key, sourceTab, sourceWindowId) {
     if (target?.incognito === false && target.type === 'normal' && target.id !== sourceWindowId) {
       let opened = false;
       try {
-        await chrome.tabs.create({ url, windowId, active: true });
+        await chrome.tabs.create({ url, windowId, active: !background });
         opened = true;
       } catch { /* The window may have closed after it was checked. */ }
       if (opened) {
         // Focusing must not create a second copy if the search tab already opened.
-        await chrome.windows.update(windowId, { focused: true }).catch(() => {});
+        if (!background) await chrome.windows.update(windowId, { focused: true }).catch(() => {});
         return;
       }
     }
-    const created = await chrome.windows.create({ url, incognito: false, type: 'normal', focused: true });
+    const created = await chrome.windows.create({ url, incognito: false, type: 'normal', focused: !background });
     if (Number.isInteger(created?.id)) {
       await chrome.storage.session.set({ [key]: created.id });
       if (sourceWindowId !== undefined) {
@@ -179,8 +181,9 @@ chrome.windows.onRemoved.addListener(windowId => {
   chrome.storage.session.remove(sourceWindowKey(windowId)).catch(error => console.error('Could not clear source window:', error));
 });
 
-async function openRegularSearchTab(url, sourceTab) {
+async function openRegularSearchTab(url, sourceTab, background) {
   const properties = { url, windowId: sourceTab.windowId };
+  if (background) properties.active = false;
   const { tabPlacement } = await readSearchSettings();
   if (tabPlacement === 'start') properties.index = 0;
   else if (tabPlacement !== 'end' && Number.isInteger(sourceTab.id) && sourceTab.id >= 0) {
@@ -194,29 +197,29 @@ async function openRegularSearchTab(url, sourceTab) {
   await chrome.tabs.create(properties);
 }
 
-export async function openSearch(option, text, sourceTab) {
+export async function openSearch(option, text, sourceTab, background = false) {
   const url = buildSearchUrl(option, text);
   const incognito = option.incognito === true;
   if (option.newWindow === true && !incognito) {
     const settings = await readSearchSettings();
     if (settings.windowBehavior === 'shared-window' && Number.isInteger(sourceTab?.windowId) && sourceTab.windowId >= 0) {
-      await reuseSearchWindow(url, sourceWindowKey(sourceTab.windowId), undefined, sourceTab.windowId);
+      await reuseSearchWindow(url, sourceWindowKey(sourceTab.windowId), undefined, sourceTab.windowId, background);
       return;
     }
     if (settings.windowBehavior === 'search-link') {
-      await reuseSearchWindow(url, await searchLinkWindowKey(option.url));
+      await reuseSearchWindow(url, await searchLinkWindowKey(option.url), undefined, undefined, background);
       return;
     }
     if (settings.windowBehavior === 'source-tab' && Number.isInteger(sourceTab?.id) && sourceTab.id >= 0) {
-      await reuseSearchWindow(url, searchWindowKey(sourceTab.id), sourceTab);
+      await reuseSearchWindow(url, searchWindowKey(sourceTab.id), sourceTab, undefined, background);
       return;
     }
-    await chrome.windows.create({ url, incognito: false, type: 'normal', focused: true });
+    await chrome.windows.create({ url, incognito: false, type: 'normal', focused: !background });
     return;
   }
   // A regular source window is already known to be usable for regular searches.
   if (!incognito && sourceTab?.incognito === false) {
-    await openRegularSearchTab(url, sourceTab);
+    await openRegularSearchTab(url, sourceTab, background);
     return;
   }
   let target;
@@ -226,17 +229,17 @@ export async function openSearch(option, text, sourceTab) {
       ?? windows.find(window => window.incognito === incognito);
   } catch { /* If enumeration is unavailable, create a window explicitly. */ }
   if (target) {
-    try { await chrome.tabs.create({ url, windowId: target.id }); }
+    try { await chrome.tabs.create({ url, windowId: target.id, ...(background ? { active: false } : {}) }); }
     catch {
       // The target may have closed between enumeration and opening the tab.
-      await chrome.windows.create({ url, incognito, focused: true });
+      await chrome.windows.create({ url, incognito, focused: !background });
       return;
     }
     // A focus failure must not cause a duplicate search tab.
-    await chrome.windows.update(target.id, { focused: true }).catch(() => {});
+    if (!background) await chrome.windows.update(target.id, { focused: true }).catch(() => {});
     return;
   }
-  await chrome.windows.create({ url, incognito, focused: true });
+  await chrome.windows.create({ url, incognito, focused: !background });
 }
 
 export async function showPopupWelcome(details) {

@@ -21,6 +21,7 @@ Click **Save** to apply your changes.
 - Add, reorder, and customize search websites and their icons.
 - Customize the quick popup’s theme, position, labels, and icon layout.
 - Expand the popup with **»** to see more sites and open settings.
+- Right-click icons to search in the background, or swap click actions in settings.
 - Choose tab placement and window reuse, with per-site New window and Incognito options.
 - Export selected settings and review imports before saving.
 
@@ -32,4 +33,4 @@ Download and extract the ZIP from [Releases](https://github.com/hgurb/SEARCHIT-S
 
 Settings stay in your browser. No analytics or tracking. Selected text is sent to your chosen website only when you launch a search. See [Privacy](PRIVACY.md).
 
-Version **1.3.0** · [MIT License](LICENSE)
+Version **1.4.0** · [MIT License](LICENSE)
