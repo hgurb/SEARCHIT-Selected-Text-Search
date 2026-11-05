@@ -33,4 +33,4 @@ Download and extract the ZIP from [Releases](https://github.com/hgurb/SEARCHIT-S
 
 Settings stay in your browser. No analytics or tracking. Selected text is sent to your chosen website only when you launch a search. See [Privacy](PRIVACY.md).
 
-Version **1.4.0** · [MIT License](LICENSE)
+Version **1.4.1** · [MIT License](LICENSE)

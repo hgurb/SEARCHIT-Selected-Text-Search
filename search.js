@@ -13,12 +13,18 @@ export const DEFAULT_OPTIONS = [
   { id: 'youtube', name: 'YouTube', url: 'https://www.youtube.com/results?search_query=#SEARCHIT#', enabled: true, incognito: false }
 ];
 
+function isHistorySearch(value) {
+  return typeof value === 'string' && /^chrome:\/\/history\/\?q=#searchit#$/i.test(value.trim());
+}
+
 export function validateOption(option) {
   if (!option || typeof option.name !== 'string' || !option.name.trim()) return 'Enter a site name.';
   if (option.name.trim().length > 80) return 'Keep the site name under 81 characters.';
   if (typeof option.url !== 'string' || !/#searchit#/i.test(option.url)) return `The search link must include ${TOKEN}.`;
+  if (isHistorySearch(option.url)) return option.incognito === true ? 'Chrome history searches cannot open in Incognito.' : '';
   try {
     const url = new URL(option.url.replace(/#searchit#/gi, 'example'));
+    if (url.protocol === 'chrome:') return 'Use chrome://history/?q=#SEARCHIT# for Chrome history searches.';
     if (!['https:', 'http:'].includes(url.protocol)) return 'Use an https:// or http:// search link.';
     if (url.username || url.password) return 'Search links cannot contain login credentials.';
     if (new URL(option.url.replace(/#searchit#/gi, 'different')).origin !== url.origin) return 'Place #SEARCHIT# in the path or query, not the website address.';
@@ -39,6 +45,7 @@ export function validateFaviconUrl(value) {
 
 export function faviconPageUrl(option) {
   if (option.faviconUrl && !validateFaviconUrl(option.faviconUrl)) return new URL(option.faviconUrl.trim()).href;
+  if (isHistorySearch(option.url)) return 'chrome://history/';
   return new URL(option.url.replace(/#searchit#/gi, 'example')).origin;
 }
 
@@ -47,6 +54,7 @@ export function buildSearchUrl(option, text) {
   if (error) throw new Error(error);
   // Also escape apostrophes and other punctuation left untouched by encodeURIComponent.
   const query = encodeURIComponent(text).replace(/[!'()*]/g, char => `%${char.charCodeAt(0).toString(16).toUpperCase()}`);
+  if (isHistorySearch(option.url)) return 'chrome://history/?q=' + query;
   return option.url.trim().replace(/#searchit#/gi, () => query);
 }
 

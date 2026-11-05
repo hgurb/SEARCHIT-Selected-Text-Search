@@ -152,7 +152,7 @@ function updateIcon(row) {
     if (row.querySelector('.custom-favicon').checked && (!faviconUrl || validateFaviconUrl(faviconUrl))) throw new Error();
     const pageUrl = faviconPageUrl({ url: row.querySelector('.url').value, faviconUrl });
     const site = new URL(pageUrl);
-    if (!['http:', 'https:'].includes(site.protocol)) throw new Error();
+    if (!['http:', 'https:'].includes(site.protocol) && site.href !== 'chrome://history/') throw new Error();
     const favicon = new URL(chrome.runtime.getURL('/_favicon/'));
     favicon.searchParams.set('pageUrl', pageUrl);
     favicon.searchParams.set('size', '32');
