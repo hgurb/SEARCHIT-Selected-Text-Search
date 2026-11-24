@@ -34,14 +34,15 @@
       :host([hidden]) { display:none!important; }
       * { box-sizing:border-box; }
       .bar { color-scheme:light;display:flex;align-items:center;gap:4px;padding:3px;border-radius:6px;background:#fff;color:#243447;border:1px solid #e3e3e3;box-shadow:0 6px 24px #0003;pointer-events:auto;width:max-content;max-width:calc(100vw - 16px);max-height:calc(100vh - 16px);overflow:auto;font:14px system-ui,sans-serif; }
-      .sites { display:grid;grid-template-columns:repeat(var(--columns,8),28px);align-items:center;gap:2px;flex:none; }
+      .sites { display:grid;grid-template-columns:minmax(0,1fr);width:calc(var(--columns,8)*30px - 2px);align-items:center;row-gap:2px;flex:none; }
+      .sites > button { justify-self:start; }
       .sites:empty { display:none; }
       .bar.dark { color-scheme:dark;background:#211d1a;color:#eee8e2;border-color:#4b3f35; }
       button { position:relative;display:grid;place-items:center;width:28px;height:28px;flex:0 0 28px;padding:4px;border:0;border-radius:4px;background:transparent;color:inherit;cursor:pointer;font:600 14px system-ui,sans-serif; }
       button:hover { background:#fff0e3; } .dark button:hover { background:#403329; }
       .extra-start { --divider-tone:#aab5c3;--divider-highlight:#8393a83d;--divider-direction:to bottom; }
       .dark .extra-start { --divider-tone:#a18e7e;--divider-highlight:#c3a68b4d; }
-      .extra-start::before { content:"";position:absolute;left:-2px;top:3px;bottom:3px;width:1px;background:linear-gradient(var(--divider-direction),transparent,var(--divider-tone) 35%,var(--divider-tone) 65%,transparent);filter:drop-shadow(0 0 2px var(--divider-highlight));pointer-events:none; }
+      .extra-start::before { content:"";position:absolute;left:var(--divider-offset,-2px);top:3px;bottom:3px;width:1px;background:linear-gradient(var(--divider-direction),transparent,var(--divider-tone) 35%,var(--divider-tone) 65%,transparent);filter:drop-shadow(0 0 2px var(--divider-highlight));pointer-events:none; }
       .extra-start.separator-row-start::before { --divider-direction:to right;left:0;top:-2px;bottom:auto;width:calc(var(--columns)*30px - 2px);height:1px; }
       .show-more { width:18px;height:26px;flex:0 0 18px;border-radius:3px;padding:0;border:1px solid transparent;background:#f4f6fa;color:#475569; }
       .show-more::before { content:"";position:absolute;inset:-1px -3px; }
@@ -52,7 +53,6 @@
       .show-more, .dark .show-more { background:transparent; }
       .sites:not(:empty) + .show-more::after { content:"";position:absolute;left:-3px;top:1px;bottom:1px;width:1px;background:linear-gradient(to bottom,transparent,#aab5c380 20%,#aab5c380 80%,transparent);pointer-events:none; }
       .dark .sites:not(:empty) + .show-more::after { background:linear-gradient(to bottom,transparent,#a18e7e80 20%,#a18e7e80 80%,transparent); }
-      .open-settings { place-self:center end; }
       .open-settings svg { display:block;width:15px;height:15px;pointer-events:none; }
       button:focus-visible { outline:2px solid #f59b54;outline-offset:-2px; }
       button:disabled { opacity:.5;cursor:wait; }
@@ -266,15 +266,17 @@
     bar.style.setProperty('--columns', rows[0] ?? 1);
     let index = 0;
     rows.forEach((count, row) => {
+      const span = ((rows[0] ?? 1) - 1) * 30;
+      const step = count > 1 ? span / (count - 1) : 0;
       for (let column = 0; column < count; column++) {
         const button = buttons[index++];
         button.style.gridRow = row + 1;
-        button.style.gridColumn = column + 1;
+        button.style.gridColumn = 1;
+        button.style.marginLeft = `${count === 1 && button.classList.contains('open-settings') ? span : column * step}px`;
+        button.style.setProperty('--divider-offset', `${-Math.max(2, (step - 28) / 2)}px`);
         button.classList.toggle('separator-row-start', column === 0 && button.classList.contains('extra-start'));
       }
     });
-    const settingsButton = sites.querySelector('.open-settings');
-    if (settingsButton) settingsButton.style.gridColumn = rows[0] ?? 1;
     const box = bar.getBoundingClientRect();
     const point = globalThis.searchitPosition(value.rect, box.width, box.height, config.settings.position, innerWidth, innerHeight);
     host.style.setProperty('left', `${point.x}px`, 'important');
